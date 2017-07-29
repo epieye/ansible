@@ -1,6 +1,19 @@
 [servers]
-sahara.ourzoo.us ip_addr=192.168.2.6
+kalahari.ourzoo.us
+gobi.ourzoo.us
+#
+#
+mojave.ourzoo.us
+#kashgar
+turpan.ourzoo.us
+bedouin.ourzoo.us
+sahara.ourzoo.us
 
 [firewalls]
+asa.ourzoo.us
+srx.ourzoo.us
 
 [switches]
+cisco.ourzoo.us
+hp.ourzoo.us
+juniper.ourzoo.us
