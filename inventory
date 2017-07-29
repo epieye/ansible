@@ -17,3 +17,7 @@ srx.ourzoo.us
 cisco.ourzoo.us
 hp.ourzoo.us
 juniper.ourzoo.us
+
+[switches:vars]
+username=hpbob
+password=radius
