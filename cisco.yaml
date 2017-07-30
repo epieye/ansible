@@ -1,0 +1,15 @@
+---
+- name: IOS Example
+  hosts: 192.168.2.5
+  vars: 
+    creds: 
+      host: "{{ ansible_host }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+
+  tasks:
+    - ios_facts:
+        provider: "{{ creds }}"
+      tags: facts_only
+
+
