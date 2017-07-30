@@ -1,12 +1,12 @@
 [servers]
 kalahari.ourzoo.us
-gobi.ourzoo.us
-#
-#
+#gobi.ourzoo.us
+#karoo
+#oasis
 mojave.ourzoo.us
 #kashgar
-turpan.ourzoo.us
-bedouin.ourzoo.us
+#turpan.ourzoo.us
+#bedouin.ourzoo.us
 sahara.ourzoo.us
 
 [firewalls]
@@ -17,7 +17,3 @@ srx.ourzoo.us
 cisco.ourzoo.us
 hp.ourzoo.us
 juniper.ourzoo.us
-
-[switches:vars]
-username=hpbob
-password=radius
