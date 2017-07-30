@@ -1,0 +1,6 @@
+---
+- name: Update servers
+  host: servers
+
+  tasks:
+  - yum: 
