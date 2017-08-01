@@ -1,0 +1,6 @@
+---
+- name: Install PXE Server
+  hosts: servers
+
+  tasks: 
+    get_facts
