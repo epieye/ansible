@@ -1,3 +1,5 @@
+[all:vars]
+
 [servers]
 kalahari.ourzoo.us
 #gobi.ourzoo.us
@@ -9,6 +11,8 @@ mojave.ourzoo.us
 #bedouin.ourzoo.us
 sahara.ourzoo.us
 
+[servers:vars]
+
 [firewalls]
 asa.ourzoo.us
 srx.ourzoo.us
@@ -17,3 +21,6 @@ srx.ourzoo.us
 cisco.ourzoo.us
 hp.ourzoo.us
 juniper.ourzoo.us
+
+[switches:vars]
+ansible_connection=local
