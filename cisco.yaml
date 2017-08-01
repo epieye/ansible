@@ -1,15 +1,16 @@
 ---
 - name: IOS Example
-  hosts: 192.168.2.5
+  hosts: cisco.ourzoo.us
   vars: 
     creds: 
       host: "{{ ansible_host }}"
-      username: "{{ username }}"
-      password: "{{ password }}"
+      username: hpbob
+      password: radius
 
   tasks:
     - ios_facts:
         provider: "{{ creds }}"
       tags: facts_only
 
-
+    - debug:
+        msg: "{{ hostvars[inventory_hostname] }}" 
