@@ -1,5 +1,15 @@
 cloning https://github.com/napalm-automation/napalm-ansible.git isn't enough.
 
+Might need to upgrade pip on CentOS 6.
+I installed it under /usr/local/bin/pip
+but upgrading /usr/bin/pip might've worked too.
+
+curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+sudo /usr/local/bin/python get-pip.py 
+
+Upgrade setuptools
+pip install --upgrade setuptools
+
 pip install 
   - pysnmp
   - paramiko # already installed
