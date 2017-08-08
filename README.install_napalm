@@ -1,0 +1,17 @@
+cloning https://github.com/napalm-automation/napalm-ansible.git isn't enough.
+
+pip install 
+  - pysnmp
+  - paramiko # already installed
+  - jsonrpclib
+  - pygal
+  - pylint
+  - pep8
+  - flake8
+  - pylama
+  - ciscoconfparse
+  - pexpect
+  - netmiko # already installed
+  - napalm (napalm-ios, napalm-nxos, napalm-eos, napalm-iosxr, napalm-junos, napalm-base, napalm-ansible)
+  - ntc-ansible.
+
