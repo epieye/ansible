@@ -1,0 +1,164 @@
+system {
+    host-name jsw-mge;
+    authentication-order [ radius password ];
+    root-authentication {
+        encrypted-password "$1$I.WbWqGW$ag73oBNBPZakWrxeFJNhT0"; ## SECRET-DATA
+    }
+    name-server {
+        192.168.2.4;
+    }
+    radius-server {
+        192.168.2.4 secret "$9$9j.Xp1heK87NbevxdVwJZ"; ## SECRET-DATA
+    }
+    login {
+        announcement "EEEEEEEEEEEEEEEEEEEEEEXXXXXXX       XXXXXXX 222222222222222     222222222222222         000000000          000000000\nE::::::::::::::::::::EX:::::X       X:::::X2:::::::::::::::22  2:::::::::::::::22     00:::::::::00      00:::::::::00\nE::::::::::::::::::::EX:::::X       X:::::X2::::::222222:::::2 2::::::222222:::::2  00:::::::::::::00  00:::::::::::::00\nEE::::::EEEEEEEEE::::EX::::::X     X::::::X2222222     2:::::2 2222222     2:::::2 0:::::::000:::::::00:::::::000:::::::0\n  E:::::E       EEEEEEXXX:::::X   X:::::XXX            2:::::2             2:::::2 0::::::0   0::::::00::::::0   0::::::0\n  E:::::E                X:::::X X:::::X               2:::::2             2:::::2 0:::::0     0:::::00:::::0     0:::::0\n  E::::::EEEEEEEEEE       X:::::X:::::X             2222::::2           2222::::2  0:::::0     0:::::00:::::0     0:::::0\n  E:::::::::::::::E        X:::::::::X         22222::::::22       22222::::::22   0:::::0 000 0:::::00:::::0 000 0:::::0\n  E:::::::::::::::E        X:::::::::X       22::::::::222       22::::::::222     0:::::0 000 0:::::00:::::0 000 0:::::0\n  E::::::EEEEEEEEEE       X:::::X:::::X     2:::::22222         2:::::22222        0:::::0     0:::::00:::::0     0:::::0\n  E:::::E                X:::::X X:::::X   2:::::2             2:::::2             0:::::0     0:::::00:::::0     0:::::0\n  E:::::E       EEEEEEXXX:::::X   X:::::XXX2:::::2             2:::::2             0::::::0   0::::::00::::::0   0::::::0\nEE::::::EEEEEEEE:::::EX::::::X     X::::::X2:::::2       2222222:::::2       2222220:::::::000:::::::00:::::::000:::::::0\nE::::::::::::::::::::EX:::::X       X:::::X2::::::2222222:::::22::::::2222222:::::2 00:::::::::::::00  00:::::::::::::00\nE::::::::::::::::::::EX:::::X       X:::::X2::::::::::::::::::22::::::::::::::::::2   00:::::::::00      00:::::::::00\nEEEEEEEEEEEEEEEEEEEEEEXXXXXXX       XXXXXXX2222222222222222222222222222222222222222     000000000          000000000\n\n";
+        message "boo!";
+        class admin {
+            idle-timeout 120;
+            login-alarms;
+            permissions all;
+        }
+        user remote {
+            uid 2001;
+            class admin;
+        }
+        user warren {
+            uid 2002;
+            class admin;
+            authentication {
+                encrypted-password "$1$I8f8JCxk$nG86b3TzbrfkXHWRAStoY0"; ## SECRET-DATA
+            }
+        }
+    }
+    services {
+        ssh;
+        netconf {
+            ssh;
+        }
+        dhcp {                          
+            traceoptions {              
+                file dhcp_logfile;      
+                level all;              
+                flag all;               
+            }                           
+        }                               
+    }                                   
+    syslog {                            
+        user * {                        
+            any emergency;              
+        }                               
+        host 192.168.2.4 {              
+            any any;                    
+        }                               
+        file messages {                 
+            any notice;                 
+            authorization info;         
+        }                               
+        file interactive-commands {     
+            interactive-commands any;   
+        }                               
+    }                                   
+    ntp {                               
+        server 192.168.2.4;             
+    }                                   
+}                                       
+interfaces {                            
+    ge-0/0/0 {                          
+        unit 0 {                        
+            family ethernet-switching;  
+        }                               
+    }                                   
+    ge-0/0/1 {                          
+        unit 0 {                        
+            family ethernet-switching;  
+        }                               
+    }                                   
+    ge-0/0/2 {                          
+        unit 0 {                        
+            family ethernet-switching;  
+        }                               
+    }                                   
+    ge-0/0/3 {                          
+        unit 0 {                        
+            family ethernet-switching;  
+        }
+    }                                   
+    ge-0/0/4 {                          
+        unit 0 {                        
+            family ethernet-switching;  
+        }                               
+    }                                   
+    ge-0/0/5 {                          
+        unit 0 {                        
+            family ethernet-switching;  
+        }                               
+    }                                   
+    ge-0/0/6 {                          
+        unit 0 {                        
+            family ethernet-switching;  
+        }                               
+    }                                   
+    ge-0/0/7 {                          
+        unit 0 {                        
+            family ethernet-switching;  
+        }                               
+    }                                   
+    ge-0/0/8 {                          
+        unit 0 {                        
+            family ethernet-switching;  
+        }                               
+    }                                   
+    ge-0/0/9 {                          
+        unit 0 {                        
+            family ethernet-switching;  
+        }                               
+    }                                   
+    ge-0/0/10 {                         
+        unit 0 {                        
+            family ethernet-switching;  
+        }                               
+    }                                   
+    ge-0/0/11 {                         
+        unit 0 {                        
+            family ethernet-switching;  
+        }                               
+    }                                   
+    ge-0/1/0 {                          
+        unit 0 {                        
+            family ethernet-switching;  
+        }                               
+    }
+    ge-0/1/1 {
+        unit 0 {
+            family ethernet-switching;
+        }
+    }
+    me0 {
+        unit 0 {
+            family inet {
+                dhcp {
+                    vendor-id Juniper-ex2200-c-12t-2g;
+                }                       
+            }                           
+        }                               
+    }                                   
+    vlan {                              
+        unit 0 {                        
+            family inet {               
+                dhcp {                  
+                    vendor-id Juniper-ex2200-c-12t-2g;
+                }                       
+            }                           
+        }                               
+    }                                   
+}                                       
+snmp {                                  
+    location spare-room;                
+    contact warren;                     
+    community public {                  
+        authorization read-only;        
+        clients {                       
+            192.168.2.0/24;             
+        }                               
+    }                                   
+}
