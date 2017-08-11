@@ -1,0 +1,11 @@
+---
+- name: NAPALM PING
+  hosts: jsw-mgmt.ourzoo.us
+  tasks: 
+    - name: NAPALM ping
+      napalm_ping:
+        hostname: "{{ ansible_host }}"
+        username: "hpbob"
+        password: "radius"
+        dev_os: "junos"
+        destination: 8.8.8.8
