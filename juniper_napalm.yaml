@@ -1,0 +1,13 @@
+---
+- name: Test naplam replace
+  hosts: jsw-mgmt.ourzoo.us
+  tasks: 
+    - napalm_install_config:
+        hostname: "{{ ansible_host }}"
+        username: "hpbob"
+        password: "radius"
+        dev_os: "junos"
+        config_file: "configs/{{ inventory_hostname }}_minimal.txt"
+        commit_changes: True
+        replace_config: True
+        diff_file: "configs/{{ inventory_hostname }}.diff"
