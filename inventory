@@ -18,9 +18,13 @@ asa.ourzoo.us
 srx.ourzoo.us
 
 [switches]
-cisco.ourzoo.us
+cisco.ourzoo.us ansible_host="192.168.2.2"
 hp.ourzoo.us
-juniper.ourzoo.us
+jsw-mgmt.ourzoo.us
 
 [switches:vars]
 ansible_connection=local
+ansible_python_interpreter=/usr/local/bin/python
+username=hpbob
+password=radius
+name-server=192.168.2.4
