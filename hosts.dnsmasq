@@ -1,0 +1,57 @@
+192.168.2.1	router	router.ourzoo.us	asa	asa.ourzoo.us	basement-rtr	basement-rtr.ourzoo.us
+192.168.2.2	switch	switch.ourzoo.us	cisco	cisco.ourzoo.us
+192.168.2.3	wireless wireless.ourzoo.us	belkin	belkin.ourzoo.us
+192.168.2.4	kalahari	kalahari.ourzoo.us
+192.168.2.5	macmini	macmini.ourzoo.us
+192.168.2.6	hp-switch	hp-switch.ourzoo.us	hp	hp.ourzoo.us
+192.168.2.7	gobi	gobi.ourzoo.us
+192.168.2.8	mojave	mojave.ourzoo.us
+192.168.2.9	karoo	karoo.ourzoo.us
+192.168.2.10	oasis	oasis.ourzoo.us	fred	fred.ourzoo.us	george	george.ourzoo.us
+192.168.2.11	printer	printer.ourzoo.us
+192.168.2.12	vonage	vonage.ourzoo.us
+192.168.2.13	xbox	xbox.ourzoo.us
+192.168.2.14	macbook	macbook.ourzoo.us
+192.168.2.15	kbook	kbook.ourzoo.us
+192.168.2.16	kphone-old	kphone-old.ourzoo.us
+192.168.2.17	mphone	mphone.ourzoo.us
+192.168.2.18	wphone	wphone.ourzoo.us
+192.168.2.19	jpad	jpad.ourzoo.us
+192.168.2.20	wii	wii.ourzoo.us
+192.168.2.21	dell	dell.ourzoo.us
+192.168.2.22	bedouin	bedouin.ourzoo.us
+192.168.2.23	banshee	banshee.ourzoo.us
+192.168.2.24    ubuntu-test     ubuntu-test.ourzoo.us
+192.168.2.25    gphone  gphone.ourzoo.us
+192.168.2.26    dnr     dnr.ourzoo.us
+192.168.2.27	jackpad	jackpad.ourzoo.us
+192.168.2.28	gavpad	gavpad.ouroo.us
+192.168.2.29	workwireless	workwireless.ourzoo.us
+192.168.2.30	uphone	uphone.ourzoo.us
+192.168.2.31	kashgar	kashgar.ourzoo.us	tashkent	tashkent.ourzoo.us
+192.168.2.32	sahara	sahara.ourzoo.us	puppet	puppet.ourzoo.us	puppetmaster	puppetmaster.ourzoo.us	ldap	ldap.ourzoo.us
+192.168.2.33	timbuktu	timbuktu.ourzoo.us
+192.168.2.34	valhalla	valhalla.ourzoo.us
+192.168.2.35	xphone	xphone.ourzoo.us
+192.168.2.36	kphone-new	kphone-new.ourzoo.us
+192.168.2.37	jack_phone	jack_phone.ourzoo.us
+192.168.2.38	juliette_phone	juliette_phone.ourzoo.us
+192.168.2.39	chromecast	chromecast.ourzoo.us
+192.168.2.40	vsrx	vsrx.ourzoo.us	firefly	firefly.ourzoo.us
+192.168.2.41	csr	cst.ourzoo.us
+192.168.2.42	rpad	rpad.ourzoo.us
+192.168.2.43    missing missing.ourzoo.us
+192.168.2.44    gav_phone_2     gav_phone_2.ourzoo.us
+192.168.2.45    vsrx2   vsrx2.ourzoo.us
+192.168.2.46    vsrx3   vsrx3.ourzoo.us
+192.168.2.47    unknownMaybeGavin	unknownMaybeGavin.ourzoo.us
+192.168.2.48	srx	srx.ourzoo.us
+192.168.2.49	gavlaptop gavlaptop.ourzoo.us
+192.168.2.50	mphone-new mphone-new.ourzoo.us
+192.168.2.51	jsw	jsw.ourzoo.us	ex	ex.ourzoo.us
+192.168.2.52	jsw-mgmt	jsw-mgmt.ourzoo.us	ex-mgmt	ex-mgmt.ourzoo.us	juniper	juniper.ourzoo.us
+192.168.2.53	wphone-new	wphone-new.ourzoo.us
+192.168.2.54	unknown-apple	unknown-apple.ourzoo.us
+192.168.2.55	karakoram	karakoram.ourzoo.us
+192.168.2.56	turpan		turpan.ourzoo.us
+192.168.2.57	mystery-lg	mystery-lg.ourzoo.us
