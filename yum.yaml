@@ -1,6 +1,17 @@
 ---
-- name: Update servers
-  host: servers
+
+- name: upgrade yum packages on servers.
+  hosts: all
 
   tasks:
-  - yum: 
+  - name: Upgrade all packages
+    yum: name=* state=latest exclude=postgresql,nodejs,rabbitmq,redis,erlang
+    become: true
+
+  - name: Install Epel and yum-utils
+    yum: name=epel-release,yum-utils 
+    become: true
+
+
+  # add warreb to wheel group
+  # amend /etc/sudoers
