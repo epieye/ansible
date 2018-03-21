@@ -1,0 +1,24 @@
+---
+
+- name: Install DNS on any server
+  hosts: all
+
+  tasks:
+  - name: Install dnsmasq via yum
+    yum: name=dnsmasq state=latest
+    become: true
+
+  - name: Enable service
+    service:
+      name: dnsmasq
+      state: started
+      enabled: yes
+    become: true
+    tags: dnsmasq
+
+  - name: copy dnsmasq
+    copy:
+      src: hosts.dnsmasq
+      dest: /etc/hosts.dnsmasq
+    become: true
+    tags: dnsmasq
