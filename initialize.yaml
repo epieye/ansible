@@ -1,0 +1,9 @@
+Here or in post-install
+
+ssh-keygen -t rsa
+copy keys from mbp and kalahari to .ssh/authorized_keys
+chmod 400 authorized_keys 
+
+sudo vi /etc/sudoers
+
+
