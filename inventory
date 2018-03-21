@@ -2,14 +2,20 @@
 
 [servers]
 kalahari.ourzoo.us
-#gobi.ourzoo.us
+gobi.ourzoo.us
 #karoo
 #oasis
 mojave.ourzoo.us
-#kashgar
+kashgar.ourzoo.us
 #turpan.ourzoo.us
 #bedouin.ourzoo.us
 sahara.ourzoo.us
+tanami.ourzoo.us
+karakum.ourzoo.us
+
+[mbus_servers]
+gobi.ourzoo.us
+kashgar.ourzoo.us
 
 [servers:vars]
 

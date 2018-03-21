@@ -1,4 +1,0 @@
-creds: 
-  host: "{{ ansible_host }}"
-  username: "{{ username }}"
-  password: "{{ password }}"
