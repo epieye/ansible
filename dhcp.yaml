@@ -1,0 +1,11 @@
+# Usage: ansible-playbook -i inventory mbus.yaml --limit gobi.ourzoo.us
+---
+
+- name: Install DHCP on all servers. Do I need to cluster or anything?
+  hosts: all
+
+  tasks:
+
+    - debug:
+        msg: "{{ cisco_switch }}" 
+    
