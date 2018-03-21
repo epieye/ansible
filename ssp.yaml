@@ -1,0 +1,172 @@
+---
+
+- name: Manage SSP servers
+  hosts: all
+
+  vars:
+    postgres_version: 9.6
+    postgres_release: 9.6-3
+
+  tasks:
+#  - name: Disable exclude in yum.conf
+#    replace:
+#      dest: /etc/yum.conf
+#      regexp: 'exclude='
+#      replace: '#exclude='
+#    become: true
+#    #become_method: dzdo
+
+  # Add users. See add_users.yaml
+  #- name: Add DMA user
+  #  user:
+  #    name: dma
+  #    comment: "DMA System Account"
+  #    home: /opt/dma
+  #  become: true
+  #  #become_method: dzdo  
+  # perhaps when: 'dma' in inventory_hostname" or in dma.yaml
+
+  - name: Determine if the environment is DEV
+    set_fact: zone="dev"
+    when: "'dev' in inventory_hostname"
+
+  - name: Determine if the environment is STG
+    set_fact: zone="stg"
+    when: "'stg' in inventory_hostname"
+
+  - name: Determine if the environment is PROD
+    set_fact: zone="prod"
+    when: "'dev' not in inventory_hostname and 'stg' not in inventory_hostname and 'mojave' not in inventory_hostname"
+
+  - name: Determine if the environment is MGMT
+    set_fact: zone="mgmt"
+    when: "'mojave' in inventory_hostname"
+
+  - name: Set the environment in /etc/environment
+    copy:
+      content: "export Environment='{{ zone }}'"
+      dest: /etc/environment
+    become: true  
+
+  - name: Source /etc/environment
+    shell: source /etc/environment
+
+  - name: Install python-zmq python-devel
+    yum: name=python-zmq,python-devel
+    become: true
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+    when: "'mojave' in inventory_hostname or 'web' in inventory_hostname"
+
+  #- name: Install circus
+  #  pip: name=circus state=latest
+  #  become: true
+  #  tags: install_circus
+  #  #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+  #  when: "'mojave' in inventory_hostname or 'web' in inventory_hostname"
+
+  #- name: Install circus-web
+  #  pip: name=circus-web state=latest
+  #  become: true
+  #  tags: install_circus
+  #  #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+  #  when: "'mojave' in inventory_hostname or 'web' in inventory_hostname"
+
+  #- name: Install chaussette
+  #  pip: name=chaussette state=latest
+  #  become: true
+  #  tags: install_circus
+  #  #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+  #  when: "'mojave' in inventory_hostname or 'web' in inventory_hostname"
+
+  - name: Creates circus.d directory
+    file: path=/etc/circus.d state=directory
+    become: true
+
+  - name: Create circus.ini
+    blockinfile:
+      path: /etc/circus.d/circus.ini
+      create: yes
+      state: present
+      marker: "## {mark} added by ansible"
+      block: |
+        [circus]
+        statsd = 1
+        httpd = 1
+
+        [watcher:webapp]
+        cmd = /usr/bin/chaussette --fd $(circus.sockets.web)
+        numprocesses = 3
+        use_sockets = True
+
+        [socket:web]
+        host = 0.0.0.0
+        port = 9999
+    become: true
+    tags: create_circus_ini
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+    when: "'mojave' in inventory_hostname or 'web' in inventory_hostname"
+
+  - name: Create systemd service script
+    blockinfile:
+      path: /etc/systemd/system/circus.service
+      create: yes
+      state: present
+      marker: "## {mark} added by ansible"
+      block: |
+        [Unit]
+        Description=Circus process manager
+        After=syslog.target network.target nss-lookup.target
+
+        [Service]
+        Type=simple
+        ExecReload=/usr/bin/circusctl reload
+        ExecStart=/usr/bin/circusd /etc/circus/circus.ini
+        Restart=always
+        RestartSec=5
+
+        [Install]
+        WantedBy=default.target
+    become: true
+    tags: create_systemd_service
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+    when: "'mojave' in inventory_hostname or 'web' in inventory_hostname"
+
+# This is basic. It seems hardly worth it. Lot's more options in DMA scripts.
+#    # Create /etc/circus.d/include/*.ini file for each web app.
+#    ; Global ENV
+#    [env]
+#    RUBY_CMD = /usr/local/bin/ruby
+#    ;
+#    [ssp_web] # on *web* servers. run as ssp-web user
+#    ;
+#    [request_worker] # on *app* servers
+#    uid          = xxx # uid of user running the service (run as ssp_app user)
+#    gid          = xxx # gid of user running the service (run as ssp_app user)
+#    working_dir  = 
+#    cmd          = $(circus.env.ruby_cmd) ssp-mbus/request/request_worker.rb
+#    ;
+#    [post_request_worker] # on *app* servers
+#    uid          = xxx # uid of user running the service (run as ssp_app user)
+#    gid          = xxx # gid of user running the service (run as ssp_app user)
+#    working_dir  = 
+#    cmd          = $(circus.env.ruby_cmd) ssp-mbus/request/request_worker.rb
+#    ;
+#    [jira_worker] 
+    
+  - name: Enable service for automatic start.
+    service:
+      name: circus # or is it circusd, I've forgotten already
+      state: started
+      enabled: yes
+    become: true
+    tags: enable_circus
+    #when: 
+
+##  - name: Restore exclude in yum.conf
+##    replace:
+##      dest: /etc/yum.conf
+##      regexp: '#exclude='
+##      replace: 'exclude='
+##    become: true
+##    #become_method: dzdo
+
