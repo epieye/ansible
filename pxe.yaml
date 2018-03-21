@@ -3,4 +3,49 @@
   hosts: servers
 
   tasks: 
-    get_facts
+    get_facts: false
+
+
+
+
+
+
+in order:
+dhcp server including next-server 192.168.2.7; filename "pxelinux.0";
+-> 192.168.2.8
+
+start web server
+install ks file
+change url IP 192.168.2.8
+
+install tftp
+- yum install tftp tftp-server xinetd
+- chkconfig xinetd on => systemctl enable xinetd.service
+                         systemctl enable tftp.service
+- # sudo mv /etc/xinetd.d/tftp.rpmnew /etc/xinetd.d/tftp
+- # edit iptables udp/69 tcp/69
+- service xinetd restart => /bin/systemctl restart  xinetd.service
+                                 systemctl restart tftp.service
+
+/var/lib/tftpboot/pxelinux.0
+/var/lib/tftpboot/pxelinux.cfg/default
+
+install centos7 minimal - install might be the wrong word
+
+mount iso /mnt
+mkdir /var/lib/tftpboot/centos7_x86_64
+copy -r /mnt/* /var/lib/tftpboot/centos7_x86_64
+
+mkdir /var/www/html/centos
+copy -r /mnt/* /var/www/html/centos/7/os/x86_64   <- why? Because I put it in the kickstart file?
+
+modify dns? kalahari, ASA?
+
+.1 router / asa,srx
+.2 cisco
+.3 ex
+.4 kalahari
+.5 gobi
+.6 mojave
+.7 sahara
+.8 karoo
