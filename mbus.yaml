@@ -1,0 +1,161 @@
+# Usage: ansible-playbook -i inventory mbus.yaml --limit gobi.ourzoo.us
+---
+
+- name: Install Rabbit MQ and related packages on MBUS servers.
+  hosts: mbus_servers
+
+  vars:
+    erlang_version: 19.3
+    erlang_rpm: erlang-solutions-1.0-1.noarch.rpm
+    rabbitmq_version: 3.6.9
+    rabbitmq_rpm: 3.6.9-1.el6.noarch.rpm
+    cluster_node_1: gobi    # I seem to remember Sean removed the domain name .ourzoo.us
+    cluster_node_2: kashgar # .ourzoo.us
+    rabbitmq_users:
+      - matthews
+      - sesawyer
+      - jefphil
+
+  tasks:
+
+  - name: Disable exclude in yum.conf because 'disableexcludes=all' is not supported in ansible yum package.
+    replace:
+      dest: /etc/yum.conf
+      regexp: '^exclude='
+      replace: '#exclude='
+    become: true
+
+  - name: Install epel-release. This should already be installed.
+    yum: name=epel-release
+    become: true
+
+  - name: Install erlang repo from https://packages.erlang-solutions.com/{{ erlang_rpm }}
+    yum: name=https://packages.erlang-solutions.com/{{ erlang_rpm }} state=present
+    become: true
+
+  - name: Install erlang {{ erlang_version }} and dependencies
+    yum: name=erlang state=latest
+    become: true
+
+  - name: Install socat. required by RabbitMQ rpm.
+    yum: name=socat
+    become: true
+
+  - name: Download the signing key for the RabbitMQ YUM repository.
+    rpm_key:
+      state: present
+      key: https://www.rabbitmq.com/rabbitmq-release-signing-key.asc
+    become: true
+
+  - name: Install rabbitmq server
+    yum: name=https://www.rabbitmq.com/releases/rabbitmq-server/v{{ rabbitmq_version }}/rabbitmq-server-{{ rabbitmq_rpm }}
+    become: true
+
+  - name: Generate Private root key. Should I just do this once locally and reuse it for all servers?
+    command: /usr/bin/openssl genrsa -out rootCA.key 2048
+
+  - name: Generate Root CA certificate
+    command: /usr/bin/openssl req -x509 -new -nodes -subj "/C=US/ST=Georgia/L=Alpharetta/O=HERE/O=GNS" -key rootCA.key -sha256 -days 1024 -outform PEM -out /etc/ssl/certs/rootCA.pem
+    become: true
+
+  - name: Generate self-signed certificates. 
+    command: /usr/bin/openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/C=US/ST=Georgia/L=Alpharetta/O=HERE/CN=us-atl01-gnsmbusdev01.net.in.here.com/" -outform PEM -keyout /etc/ssl/certs/rabbitmq-selfsigned-key.pem -out /etc/ssl/certs/rabbitmq-selfsigned-cert.pem
+    args:
+      creates: /etc/ssl/certs/rabbitmq-selfsigned-key.pem
+    become: true
+
+  - name: Create rabbitmq configuration file, enable Clustering and SSL. Still doesn't work. Merge with next task. Check if block gets written everytime. What was the thing to prevent that?
+    blockinfile:
+      path: /etc/rabbitmq/rabbitmq.config
+      create: yes
+      marker: "%% {mark} Added by Ansible"
+      state: present
+      block: |
+        [
+         {rabbit,
+          [
+           {heartbeat, 600},
+           {vm_memory_high_watermark, 0.5},
+           {cluster_partition_handling,'autoheal'},
+           {dump_log_write_threshold, 50000},
+           {frame_max, 131072},
+           {cluster_keepalive_interval, 10000},
+           {cluster_nodes, {['{{ cluster_node_1 }}','{{ cluster_node_2 }}'], disc}}
+          ]
+         },
+         {rabbitmq_management,
+          [
+           {rates_mode, basic},
+           {listener, [{port,     15672},
+                       {ssl,      true},
+                       {ssl_opts, [{cacertfile, "/etc/ssl/certs/rootCA.pem"},
+                                   {certfile,   "/etc/ssl/certs/rabbitmq-selfsigned-cert.pem"},
+                                   {keyfile,    "/etc/ssl/certs/rabbitmq-selfsigned-key.pem"}
+                                  ]
+                       }
+                      ]
+           }
+          ]
+         }
+        ].
+    become: true
+
+  - name: Set erlang cookie on members of the cluster
+    copy:
+      content: "PJUJWHQVBEIHOVGELGOK\n"
+      dest: /var/lib/rabbitmq/.erlang.cookie
+      mode: 0600
+      owner: rabbitmq # or rabbitmq:rabbitmq
+    become: true
+     
+  - name: enable rabbit mq management. Check if these needs to be done after starting the service.
+    command: /usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/sbin/rabbitmq-plugins enable rabbitmq_management
+    become: true
+
+  - name: Enable service for automatic start. Does this also restart if already running?
+    service:
+      name: "rabbitmq-server"
+      state: started
+      enabled: yes
+    become: true
+
+  - name: Create admin accounts for NSS
+    command: /usr/sbin/rabbitmqctl add_user "{{ item }}" password
+    with_items:
+      - sesawyer
+      - jefphill
+      - matthews 
+    register: result
+    ignore_errors: True
+    become: true
+
+# unless users already exist
+# dzdo rabbitmqctl list_users | grep matthews | cut -f 1 | grep jefphill ; echo $?
+# 0 if match, 1 if not.
+
+  - name: Set account types to administrator
+    command: /usr/sbin/rabbitmqctl set_user_tags "{{ item }}" administrator
+    with_items:
+      - sesawyer
+      - jefphill
+      - matthews 
+    #when: result.changed
+    ignore_errors: True
+    become: true
+
+  - name: Give admins users access to '/' vhost
+    command: /usr/sbin/rabbitmqctl set_permissions -p / {{ item }} ".*" ".*" ".*"
+    with_items:
+      - sesawyer
+      - jefphill
+      - matthews
+    #when: result.changed
+    ignore_errors: True
+    become: true
+
+  - name: Reenable exclude in yum.conf
+    replace:
+      dest: /etc/yum.conf
+      regexp: '#exclude='
+      replace: 'exclude='
+    become: true
