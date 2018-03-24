@@ -1,5 +1,5 @@
 ---
-- name: Install postgres packages on servers.
+- name: Install postgres packages for clients and servers.
   hosts: all
 
   vars:
@@ -8,71 +8,38 @@
     postgres_release: 9.6-3
 
   tasks:
-#  - name: Disable exclude in yum.conf
-#    replace:
-#      dest: /etc/yum.conf
-#      regexp: '^exclude='
-#      replace: '#exclude='
-#    become: true
-
-#  - name: Amend user.ignore
-#    replace:
-#      dest: /etc/centrifydc/user.ignore
-#      insertafter: EOF
-#      line: postgres
-#      backrefs: yes
-#    become: true
-
-#  - name: Reload AD cache for changes to take effect.
-#    command: /usr/sbin/adreload
-#    become: true
-
-#  - name: Do I need to add postgres user?
-#    user:
-#      name: postgres
-#      comment: "Postgres User"
-#      home: /var/lib/pgsql
-# make the local postgres account use the same uid
-#    become: true
-
   - name: Install postgres repo. 
     yum: name=http://download.postgresql.org/pub/repos/yum/{{ postgres_version }}/redhat/rhel-6-x86_64/pgdg-centos96-{{ postgres_release }}.noarch.rpm
     become: true
+    tags: 
+      - client
+      - server
+      - slave
 
   - name: Install postgres server on DBs
     yum: name=postgresql96-server
     become: true
+    tags: 
+      - server
+      - slave
 
-# client tools for client-only servers (all the others). Maybe make all the other tasks when: 'db servers' or something.
-
-#  - name: Install redis on DBs
-#    yum: name=redis
-#    become: true
-#    when: "'db' in inventory_hostname"
-
-  - name: Install postgres packages for connecting to databases. Do I really have to install them seperately?
-    yum: name=postgresql96-devel
+  - name: Install postgres libraries needed for client side
+    yum: name=postgresql96-devel,postgresql96-libs
     become: true
-    #when: "'scz' not in inventory_hostname"
-
-  - name: Install postgres packages for connecting to databases. Do I really have to install them seperately? 
-    yum: name=postgresql96-libs
-    become: true
-    #when: "'scz' not in inventory_hostname"
+    tags: 
+      - client
+      - server
+      - slave
 
   - name: Initiate the DB. Same for master and slaves Hot Standby
-    command: /usr/pgsql-{{ postgres_version  }}/bin/postgresql{{ postgres_concise }}-setup initdb
+    command: /usr/pgsql-9.6/bin/postgresql96-setup initdb
     args:
       creates: /var/lib/pgsql/{{ postgres_version  }}/data/postgresql.conf
     become: true
-    #when: ansible_distribution == "CentOS"
-
-  - name: Define trusted subnets. pg_hba.conf is created by init above.
-    lineinfile:
-      dest="/var/lib/pgsql/9.6/data/pg_hba.conf"
-      line="host all all 192.168.2.0/24 trust"
-      insertafter=EOF
-    become: true
+    tags: 
+      - server
+      - slave
+    #when: ansible_distribution == 'CentOS' and "ansible_distribution_version" == "7"
 
   - name: Allow remote connections. postgresql.conf is created by init above.
     replace:
@@ -80,189 +47,195 @@
       regexp: "#listen_addresses = 'localhost'"
       replace: "listen_addresses = '*'"
     become: true
+    tags:
+      - server
+      - slave
 
-# Assume I am configuring hot standy from the beginning, don't need to stop the service. Then again maybe not a bad idea to have separate playbooks.
-#- name: "Configure-master: stop old postgresql service"
-#  service: name="postgresql" state=stopped
-#  when: postgresql_drop_old_cluster
+  - name: Define trusted subnets before starting the service. pg_hba.conf is created by init above.
+    copy:
+      content="local	all	all	trust\nhost	all	all	192.168.2.0/24 trust\n"
+      dest="/var/lib/pgsql/{{ postgres_version }}/data/pg_hba.conf"
+    become: true
+    tags: server
+    #when: ansible_distribution == 'CentOS' and "ansible_distribution_version" == "7"
 
-#- name: "Configure-master:: remove existing data dir"
-#  file: path="/var/lib/postgresql/{{ postgresql_version }}/main" state=absent
-#  when: postgresql_drop_old_cluster
+  - name: enable and start the service (CentOS7)
+    systemd: name=postgresql-{{ postgres_version }} state=started enabled=yes
+    become: true
+    tags: server
+    #when: ansible_distribution == 'CentOS' and "ansible_distribution_version" == "7"
 
-#- name: "Configure-master:: initialize new postgresql cluster"
-#  sudo: yes
-#  sudo_user: "{{ postgresql_admin_user }}"
-#  command: "/usr/lib/postgresql/{{ postgresql_version }}/bin/initdb -D /var/lib/postgresql/{{ postgresql_version }}/main" <- seems to have the main
-#  when: postgresql_drop_old_cluster                                                                                          do I need to do this? Try it without.
 
-#- name: "Configure-master: configure pg_hba.conf"
-#  template:
-#    src: pg_hba.conf.j2                                                  <- what is in the j2 file?
+
+
+
+## Assume I am configuring hot standy from the beginning, don't need to stop the service. Then again maybe not a bad idea to have separate playbooks.
+##- name: "Configure-master: stop old postgresql service"
+##  service: name="postgresql" state=stopped
+##  when: postgresql_drop_old_cluster
 #
-## TYPE  DATABASE        USER            ADDRESS                 METHOD
+##- name: "Configure-master:: remove existing data dir"
+##  file: path="/var/lib/postgresql/{{ postgresql_version }}/main" state=absent
+##  when: postgresql_drop_old_cluster
 #
-#{% for connection in postgresql_pg_hba_default %}
-## {{ connection.comment }}
-#{{ connection.type }}	{{ connection.database }}		{{ connection.role }}		{{ connection.address }}		{{ connection.method }}
-#{% endfor %}
+##- name: "Configure-master:: initialize new postgresql cluster"
+##  sudo: yes
+##  sudo_user: "{{ postgresql_admin_user }}"
+##  command: "/usr/lib/postgresql/{{ postgresql_version }}/bin/initdb -D /var/lib/postgresql/{{ postgresql_version }}/main" <- seems to have the main
+##  when: postgresql_drop_old_cluster                                                                                          do I need to do this? Try it without.
 #
-#{% if ansible_default_ipv4.address in groups['pgmaster'] %}
-#{% for slave in groups['pgslaves'] %}
-#host	replication		{{ postgresql_streaming_user.name }}		{{ hostvars[slave]['ansible_default_ipv4']['address'] }}/32		{{ postgresql_default_ipv4_auth_method }}
-#{% endfor %}
-#{% endif %}
-#
-#{% if ansible_default_ipv4.address in groups['pgslaves'] %}
-#host    replication             {{ postgresql_streaming_user.name }}            {{ hostvars[groups['pgmaster'][0]]['ansible_default_ipv4']['address'] }}/32             {{ postgresql_default_ipv4_auth_method }}
-#{% endif %}
-#
-#
-## Custom
-##{% for connection in postgresql_pg_hba_custom %}
+##- name: "Configure-master: configure pg_hba.conf"
+##  template:
+##    src: pg_hba.conf.j2                                                  <- what is in the j2 file?
+##
+### TYPE  DATABASE        USER            ADDRESS                 METHOD
+##
+##{% for connection in postgresql_pg_hba_default %}
+### {{ connection.comment }}
 ##{{ connection.type }}	{{ connection.database }}		{{ connection.role }}		{{ connection.address }}		{{ connection.method }}
 ##{% endfor %}
+##
+##{% if ansible_default_ipv4.address in groups['pgmaster'] %}
+##{% for slave in groups['pgslaves'] %}
+##host	replication		{{ postgresql_streaming_user.name }}		{{ hostvars[slave]['ansible_default_ipv4']['address'] }}/32		{{ postgresql_default_ipv4_auth_method }}
+##{% endfor %}
+##{% endif %}
+##
+##{% if ansible_default_ipv4.address in groups['pgslaves'] %}
+##host    replication             {{ postgresql_streaming_user.name }}            {{ hostvars[groups['pgmaster'][0]]['ansible_default_ipv4']['address'] }}/32             {{ postgresql_default_ipv4_auth_method }}
+##{% endif %}
+##
+##
+### Custom
+###{% for connection in postgresql_pg_hba_custom %}
+###{{ connection.type }}	{{ connection.database }}		{{ connection.role }}		{{ connection.address }}		{{ connection.method }}
+###{% endfor %}
+##
+##
+##    dest: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf"
+##    owner: "{{ postgresql_admin_user }}"
+##    group: "{{ postgresql_admin_user }}"
+##    mode: 0640
 #
+#  - name: replace 192.168.0/24 with 10.234.8.45
+#    lineinfile:
+#      dest="/var/lib/pgsql/9.6/data/pg_hba.conf"
+#      line="host	replication	all	192.168.0/24	trust" 
+#      insertafter=EOF
+#    become: true
 #
-#    dest: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf"
-#    owner: "{{ postgresql_admin_user }}"
-#    group: "{{ postgresql_admin_user }}"
-#    mode: 0640
-
-  - name: replace 192.168.0/24 with 10.234.8.45
-    lineinfile:
-      dest="/var/lib/pgsql/9.6/data/pg_hba.conf"
-      line="host	replication	all	192.168.0/24	trust" 
-      insertafter=EOF
-    become: true
-
-  #- name: "Configure-master: configure postgresql.conf"
-  #  lineinfile:
-  #    dest: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
-  #    state: present
-  #    regexp: "{{ item.regexp }}"
-  #    line: "{{ item.guc }}"
-  #  with_items: postgresql_conf_default_guc
-
-  #- name: "Configure-master: enable archive mode"
-  #  lineinfile:
-  #    dest: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
-  #    state: present
-  #    regexp: "^#?archive_mode = .*$"                                       <- looks important
-  #    line: "archive_mode = 'on'"                                           <- this too. Are they in the pg_hba.conf file?
-
-  #- name: "Configure-master: set archive mode timeout"
-  #  lineinfile:
-  #    dest: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
-  #    state: present
-  #    regexp: "^#?archive_timeout = .*$"
-  #    line: "archive_timeout = 60 "
-
-  #- name: "Configure-master: set archive mode command"
-  #  lineinfile:
-  #    dest: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
-  #    state: present
-  #    regexp: "^#?archive_command = .*$"
-  #    line: "archive_command = 'envdir /etc/wal-e.d/env /usr/local/bin/wal-e wal-push {{ postgresql_main_directory }}%p'"
-
-  #- name: "Configure-master: create postgresql log directory"
-  #  file:
-  #    path: "{{ postgresql_log_directory }}"
-  #    state: directory
-  #    owner: "{{ postgresql_admin_user }}"
-  #    group: "{{ postgresql_admin_user }}"
-  #    mode: 0755
-  #  when: postgresql_log_directory is defined
-
-  #- name: "Configure-master: start postgresql service"
-  #  service: name="postgresql" state=started enabled=yes
-
-  #- name: 
-  #  replace:
-  #    dest: /var/lib/pgsql/{{ postgres_version }}/data/postgresql.conf
-  #    regexp: "                               "
-  #    replace: "                      "
-  #  become: true
-
-  #- name: Initiate the Slave DBs. Alread init'd. Same for Master and Slave n'est pas?
-  #  #command: /usr/pgsql-{{ postgres_version  }}/bin/postgresql{{ postgres_concise }}-setup initdb
-  #  #args:
-  #  #  creates: /var/lib/pgsql/{{ postgres_version  }}/data/postgresql.conf
-  #  #become: true
-  #  #when: ansible_distribution == "CentOS"
-  #
-  # Do "postgresql.conf" and "recovery.conf" exist before init? If so, maybe I should modify them first.
-
-  - name:
-    replace:
-      dest: /var/lib/pgsql/{{ postgres_version }}/data/postgresql.conf
-      regexp: "#hot_standby = off"
-      replace: "hot_standby = on"
-    become: true
-    when: "'nl-ams01-gnsbd01' in inventory_hostname"
-
+#  #- name: "Configure-master: configure postgresql.conf"
+#  #  lineinfile:
+#  #    dest: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
+#  #    state: present
+#  #    regexp: "{{ item.regexp }}"
+#  #    line: "{{ item.guc }}"
+#  #  with_items: postgresql_conf_default_guc
+#
+#  #- name: "Configure-master: enable archive mode"
+#  #  lineinfile:
+#  #    dest: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
+#  #    state: present
+#  #    regexp: "^#?archive_mode = .*$"                                       <- looks important
+#  #    line: "archive_mode = 'on'"                                           <- this too. Are they in the pg_hba.conf file?
+#
+#  #- name: "Configure-master: set archive mode timeout"
+#  #  lineinfile:
+#  #    dest: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
+#  #    state: present
+#  #    regexp: "^#?archive_timeout = .*$"
+#  #    line: "archive_timeout = 60 "
+#
+#  #- name: "Configure-master: set archive mode command"
+#  #  lineinfile:
+#  #    dest: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
+#  #    state: present
+#  #    regexp: "^#?archive_command = .*$"
+#  #    line: "archive_command = 'envdir /etc/wal-e.d/env /usr/local/bin/wal-e wal-push {{ postgresql_main_directory }}%p'"
+#
+#  #- name: "Configure-master: create postgresql log directory"
+#  #  file:
+#  #    path: "{{ postgresql_log_directory }}"
+#  #    state: directory
+#  #    owner: "{{ postgresql_admin_user }}"
+#  #    group: "{{ postgresql_admin_user }}"
+#  #    mode: 0755
+#  #  when: postgresql_log_directory is defined
+#
+#  #- name: "Configure-master: start postgresql service"
+#  #  service: name="postgresql" state=started enabled=yes
+#
+#  #- name: 
+#  #  replace:
+#  #    dest: /var/lib/pgsql/{{ postgres_version }}/data/postgresql.conf
+#  #    regexp: "                               "
+#  #    replace: "                      "
+#  #  become: true
+#
+#  #- name: Initiate the Slave DBs. Alread init'd. Same for Master and Slave n'est pas?
+#  #  #command: /usr/pgsql-{{ postgres_version  }}/bin/postgresql{{ postgres_concise }}-setup initdb
+#  #  #args:
+#  #  #  creates: /var/lib/pgsql/{{ postgres_version  }}/data/postgresql.conf
+#  #  #become: true
+#  #  #when: ansible_distribution == "CentOS"
+#  #
+#  # Do "postgresql.conf" and "recovery.conf" exist before init? If so, maybe I should modify them first.
+#
 #  - name:
 #    replace:
-#      dest: /var/lib/pgsql/{{ postgres_version }}/data/recovery.conf
-#      regexp: "                               "
-#      replace: "                      "
+#      dest: /var/lib/pgsql/{{ postgres_version }}/data/postgresql.conf
+#      regexp: "#hot_standby = off"
+#      replace: "hot_standby = on"
 #    become: true
 #    when: "'nl-ams01-gnsbd01' in inventory_hostname"
 #
-#standby_mode = 'on'      # to enable the standby (read-only) mode.
-#primary_conninfo = 'host=10.0.2.41 port=5432 user=snaga' # to specify a connection info to the master node.
-#trigger_file = '/tmp/pg_failover_trigger'                # to specify a trigger file to recognize a fail over.
-#restore_command = 'cp /home/snaga/pgdata90b/pg_xlogarch/%f "%p"'
+##  - name:
+##    replace:
+##      dest: /var/lib/pgsql/{{ postgres_version }}/data/recovery.conf
+##      regexp: "                               "
+##      replace: "                      "
+##    become: true
+##    when: "'nl-ams01-gnsbd01' in inventory_hostname"
+##
+##standby_mode = 'on'      # to enable the standby (read-only) mode.
+##primary_conninfo = 'host=10.0.2.41 port=5432 user=snaga' # to specify a connection info to the master node.
+##trigger_file = '/tmp/pg_failover_trigger'                # to specify a trigger file to recognize a fail over.
+##restore_command = 'cp /home/snaga/pgdata90b/pg_xlogarch/%f "%p"'
+
+##
+##  - name: Make sure proxy is specified in yum.conf where necessary (Currently NUQ servers).
+##    blockinfile:
+##      dest: /etc/yum.conf
+##      insertafter: EOF
+##      block: |
+##        proxy=http://patlprx01.core.in.here.com:3128
+##        exclude=postgresql*,nodejs*,rabbitmq*,redis*,erlang*
 #
+#  - name: Create Slave Recovery.conf. Change 192.168.2.32 to 10.234.136.39. Does a trigger file indicate it has failed-over, or is it the criteria for failing-over?
+#    copy:
+#      content: "standby_mode = 'on'\nprimary_conninfo = 'host=192.168.2.32 port=5432 user=postgres'\ntrigger_file = '/tmp/pg_failover_trigger'\nrestore_command = 'cp /home/snaga/pgdata90b/pg_xlogarch/%f "%p"'\n"
+#      dest: /var/lib/pgsql/{{ postgres_version }}/data/recovery.conf
+#    become: true
+#    when: "'nl-ams01-gnsbd01' in inventory_hostname"
+
+
+
+
+
+
+#  - name: Prereq for pg gem - maybe not.
+#    yum: name=libpqxx-devel state=latest
+#    become: true
 #
-#  - name: Make sure proxy is specified in yum.conf where necessary (Currently NUQ servers).
-#    blockinfile:
-#      dest: /etc/yum.conf
-#      insertafter: EOF
-#      block: |
-#        proxy=http://patlprx01.core.in.here.com:3128
-#        exclude=postgresql*,nodejs*,rabbitmq*,redis*,erlang*
-
-  - name: Create Slave Recovery.conf. Change 192.168.2.32 to 10.234.136.39. Does a trigger file indicate it has failed-over, or is it the criteria for failing-over?
-    copy:
-      content: "standby_mode = 'on'\nprimary_conninfo = 'host=192.168.2.32 port=5432 user=postgres'\ntrigger_file = '/tmp/pg_failover_trigger'\nrestore_command = 'cp /home/snaga/pgdata90b/pg_xlogarch/%f "%p"'\n"
-      dest: /var/lib/pgsql/{{ postgres_version }}/data/recovery.conf
-    become: true
-    when: "'nl-ams01-gnsbd01' in inventory_hostname"
-
-#  - name: Initiate the DB
-#    command: /usr/pgsql-{{ postgres_version  }}/bin/postgresql{{ postgres_concise }}-setup initdb
-#    args:
-#      creates: /var/lib/pgsql/{{ postgres_version  }}/data/postgresql.conf
+#  - name: install pg gem. Do I really have to do them separately? 
+#    command: "gem install pg -- --with-pg-config=/usr/pgsql-9.6/bin/pg_config" # gem module doesn't support parameters # gem: name=pg state=latest user_install=no
 #    become: true
-#    when: ansible_distribution == "CentOS"
-
-  - name: Start the service. Will this restart the service if it is already running? sudo service postgresql-9.6 restart
-    service:
-      name: postgresql-{{ postgres_version }}
-      state: started
-      enabled: yes
-    become: true
-
-  - name: Prereq for pg gem - maybe not.
-    yum: name=libpqxx-devel state=latest
-    become: true
-
-  - name: install pg gem. Do I really have to do them separately? 
-    command: "gem install pg -- --with-pg-config=/usr/pgsql-9.6/bin/pg_config" # gem module doesn't support parameters # gem: name=pg state=latest user_install=no
-    become: true
-
-  - name: install sequel gem.
-    gem: name=sequel state=latest user_install=no
-    become: true
-
-#  - name: install sequel_pg gem.
-#    command: "gem install sequel_pg -- --with-pg-config=/usr/pgsql-9.6/bin/pg_config" # gem module doesn't support parameters # gem: name=sequel_pg state=latest user_install=no
+#
+#  - name: install sequel gem.
+#    gem: name=sequel state=latest user_install=no
 #    become: true
+#
+##  - name: install sequel_pg gem.
+##    command: "gem install sequel_pg -- --with-pg-config=/usr/pgsql-9.6/bin/pg_config" # gem module doesn't support parameters # gem: name=sequel_pg state=latest user_install=no
+##    become: true
 
-#  - name: Restore exclude in yum.conf
-#    replace:
-#      dest: /etc/yum.conf
-#      regexp: '#exclude='
-#      replace: 'exclude='
-#    become: true
