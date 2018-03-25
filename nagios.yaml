@@ -1,0 +1,14 @@
+---
+
+- name: Install and Configure Nagios on any server.
+  hosts: all
+
+  tasks:
+  - name: Install Apache and PHP. Nagios will probably install what it needs.
+    yum: name=httpd,php
+    become: true
+
+  - name: Install Nagios Package
+    yum: name=nagios
+    become: true
+
