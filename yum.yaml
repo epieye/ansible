@@ -12,6 +12,10 @@
     yum: name=epel-release,yum-utils 
     become: true
 
+  - name: Install Git
+    yum: name=git
+    become: true
+
   # add warren to wheel group
   # amend /etc/sudoers
 
