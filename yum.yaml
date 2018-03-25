@@ -12,6 +12,10 @@
     yum: name=epel-release,yum-utils 
     become: true
 
+  - name: Install Ansible
+    yum: name=ansible
+    become: true
+
   - name: Install Git
     yum: name=git
     become: true
@@ -23,6 +27,6 @@
     pip: name=pip state=latest
     become: true
 
-  - name: 
+  - name: Install psycopg2 with pip
     pip: name=psycopg2
     become: true
