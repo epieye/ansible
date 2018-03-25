@@ -5,13 +5,20 @@
 
   tasks:
   - name: Upgrade all packages
-    yum: name=* state=latest exclude=postgresql,nodejs,rabbitmq,redis,erlang
+    yum: name=* state=latest
     become: true
 
   - name: Install Epel and yum-utils
     yum: name=epel-release,yum-utils 
     become: true
 
-
-  # add warreb to wheel group
+  # add warren to wheel group
   # amend /etc/sudoers
+
+  - name: update pip so python doesn't whine
+    pip: name=pip state=latest
+    become: true
+
+  - name: 
+    pip: name=psycopg2
+    become: true
