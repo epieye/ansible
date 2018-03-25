@@ -232,14 +232,25 @@
     become: true
     tags: client
 
-#  - name: install sequel gem.
-#    gem: name=sequel state=latest user_install=no
-#    become: true
-#
-##  - name: install sequel_pg gem.
-##    command: "gem install sequel_pg -- --with-pg-config=/usr/pgsql-9.6/bin/pg_config" # gem module doesn't support parameters # gem: name=sequel_pg state=latest user_install=no
-##    become: true
+  - name: install sqlite3 gem.
+    gem: name=sqlite3 state=latest user_install=no
+    become: true
+    tags: client
 
+  - name: install sequel gem.
+    gem: name=sequel state=latest user_install=no
+    become: true
+    tags: client
+
+  - name: install logger gem.
+    gem: name=logger state=latest user_install=no
+    become: true
+    tags: client
+
+  - name: install sequel_pg gem.
+    command: "gem install sequel_pg -- --with-pg-config=/usr/pgsql-9.6/bin/pg_config"
+    become: true
+    tags: client
 
   - name: Create user on database
     postgresql_user:
