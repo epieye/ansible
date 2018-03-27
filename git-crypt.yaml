@@ -42,16 +42,18 @@
   # use `sudo rngd -r /dev/urandom` if slow
 
   #cd repo
-  #git-crypt init # Presumably I need to do this on every server?
+  #git-crypt init # Only do this on one server.
+  # 
   #.gitattributes
   #/** filter=git-crypt diff=git-crypt
   #.git* !filter !diff
   # secret.yaml filter=git-crypt diff=git-crypt
   # this will be development.yaml stage.yaml etc 
-  # Id like it if it added .enc when it uploaded the encrypted file.
+  # I'd like it if it added .enc when it uploaded the encrypted file.
 
   #gpg --import some_key.txt # or keyserver 
   #git-crypt add-gpg-user --trusted ABCD1234
+  #Do I need to git-crypt export-key? If so, what do I do with it? Looks like this gets magically transported to the new clone.
 
   #it does encrypt it automatically when I push. Check it decrypts on a separate server.
   #I put the gnupg key on the server as well as the ssh key
