@@ -57,12 +57,12 @@
 
   #it does encrypt it automatically when I push. Check it decrypts on a separate server.
   #I put the gnupg key on the server as well as the ssh key
-  #don't forget to commit the .gitattribues too
+  #don't forget to commit the .gitattribues too. I don't think it does it for me.
 
   git add secret.yaml
   commit, push. 
 
-  Anyone should be able to edit it and commit the changes, like any other git file. It is automatically encrpted and decrypted on pull. 
+  Anyone should be able to edit it and commit the changes, like any other git file. It is automatically encrypted and decrypted on pull. Or do I have to git-crypt unlock every time?
   How does it know who is allowed to decrpyt it?
 
 
