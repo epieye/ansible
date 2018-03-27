@@ -1,0 +1,58 @@
+---
+
+- name: git-crypt
+  hosts: all
+
+  tasks:
+  - name: Install pre-requisites. Probably already installed.
+    yum: name=make,gcc-c++,openssl-devel,git,openssl state=latest
+    become: true
+    tags: git-crypt
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+
+  - name: Download software from https://github.com/AGWA/git-crypt
+    unarchive:
+      src: https://github.com/AGWA/git-crypt/archive/master.zip
+      dest: /home/warren
+      remote_src: yes
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+
+  - name: Running "make" 
+    command: make chdir=/home/warren/git-crypt-master
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+
+  - name: Running "make install"
+    command: make install chdir=/home/warren/git-crypt-master
+    become: true
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+
+  - name: Install gnupg. Installed this for something recently.
+    yum: name=gnupg state=latest
+    become: true
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+
+  #yum install rng-tools - already installed 
+  ##edit /etc/sysconfig/rngd and add EXTRAOPTIONS="-r /dev/random" or is it urandom
+  #rngd -r /dev/random as root once rng-tools is installed. Your key generation will take off immediately. - still doesn't seem to do much.
+  # sudo rngd -r /dev/urandom - ha. then immediate. lovely.
+
+  # Everyone
+  #gpg --gen-key # need to skip the interaction - gpg --batch --generate-key foo - but where store the parameters?
+  #gpg --armor --output ~/.gnupg/my_pubkey.txt --export <keyid> where keyid is the email address used during creation
+
+  #cd repo
+  #git-crypt init # Presumably I need to do this on every server?
+  #.gitattributes
+  #/** filter=git-crypt diff=git-crypt
+  #.git* !filter !diff
+  # secret.yaml filter=git-crypt diff=git-crypt
+
+  #gpg --import some_key.txt # or keyserver 
+  #git-crypt add-gpg-user --trusted ABCD1234
+
+  #it does encrypt it automatically when I push. Check it decrypts on a separate server.
+  #I put the gnupg key on the server as well as the ssh key
+  #don't forget to transfer/commit the .gitattribues
+
+
+
