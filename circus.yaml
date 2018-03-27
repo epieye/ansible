@@ -1,0 +1,133 @@
+---
+
+- name: Deploy Circus and circusify services.
+  hosts: all
+
+  tasks:
+  - name: Install pre-requisites
+    yum: name=python-zmq,python-devel,python-virtualenv state=latest
+    become: true
+    tags: install_circus
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+    when: "'tanami' in inventory_hostname or 'web' in inventory_hostname"
+
+  - name: Install circus
+    pip: name=circus state=latest
+    become: true
+    tags: install_circus
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+    when: "'tanami' in inventory_hostname or 'web' in inventory_hostname"
+
+  - name: Install circus-web
+    pip: name=circus-web state=latest
+    become: true
+    tags: install_circus
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+    when: "'tanami' in inventory_hostname or 'web' in inventory_hostname"
+
+  - name: Install chaussette
+    pip: name=chaussette state=latest
+    become: true
+    tags: install_circus
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+    when: "'tanami' in inventory_hostname or 'web' in inventory_hostname"
+
+  - name: Creates circus.d directory
+    file: path=/etc/circus.d state=directory
+    become: true
+    tags: create_circus_ini
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+    when: "'tanami' in inventory_hostname or 'web' in inventory_hostname"
+
+  - name: Create circus.ini
+    blockinfile:
+      path: /etc/circus.d/circus.ini
+      create: yes
+      state: present
+      marker: "## {mark} added by ansible"
+      block: |
+        [circus]
+        statsd = 1
+        httpd = 1
+
+        [watcher:webapp]
+        cmd = /usr/bin/chaussette --fd $(circus.sockets.web)
+        numprocesses = 3
+        use_sockets = True
+
+        [socket:web]
+        host = 0.0.0.0
+        port = 9999
+    become: true
+    tags: create_circus_ini
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+    when: "'tanami' in inventory_hostname or 'web' in inventory_hostname"
+
+  - name: Create systemd service script
+    blockinfile:
+      path: /etc/systemd/system/circus.service
+      create: yes
+      state: present
+      marker: "## {mark} added by ansible"
+      block: |
+        [Unit]
+        Description=Circus process manager
+        After=syslog.target network.target nss-lookup.target
+
+        [Service]
+        Type=simple
+        ExecReload=/usr/bin/circusctl reload
+        ExecStart=/usr/bin/circusd /etc/circus/circus.ini
+        Restart=always
+        RestartSec=5
+
+        [Install]
+        WantedBy=default.target
+    become: true
+    tags: create_systemd_service
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+    when: "'tanami' in inventory_hostname or 'web' in inventory_hostname"
+
+# This is basic. It seems hardly worth it. Lot's more options in DMA scripts.
+#    # Create /etc/circus.d/include/*.ini file for each web app.
+#    ; Global ENV
+#    [env]
+#    RUBY_CMD = /usr/local/bin/ruby
+#    ;
+#    [ssp_web] # on *web* servers. run as ssp-web user
+#    ;
+#    [request_worker] # on *app* servers
+#    uid          = xxx # uid of user running the service (run as ssp_app user)
+#    gid          = xxx # gid of user running the service (run as ssp_app user)
+#    working_dir  = 
+#    cmd          = $(circus.env.ruby_cmd) ssp-mbus/request/request_worker.rb
+#    ;
+#    [post_request_worker] # on *app* servers
+#    uid          = xxx # uid of user running the service (run as ssp_app user)
+#    gid          = xxx # gid of user running the service (run as ssp_app user)
+#    working_dir  = 
+#    cmd          = $(circus.env.ruby_cmd) ssp-mbus/request/request_worker.rb
+#    ;
+#    [jira_worker] 
+
+  # Does service module support reload?
+  # otherwise use command: systemctl --system daemon-reload
+    
+  - name: Enable service for automatic start.
+    service:
+      name: circus # or is it circusd, I've forgotten already
+      state: started
+      enabled: yes
+    become: true
+    tags: enable_circus
+    #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
+    when: "'tanami' in inventory_hostname or 'web' in inventory_hostname"
+
+#  - name: Restore exclude in yum.conf
+#    replace:
+#      dest: /etc/yum.conf
+#      regexp: '#exclude='
+#      replace: 'exclude='
+#    become: true
+#    #become_method: dzdo
+
