@@ -31,14 +31,15 @@
     become: true
     #when: "'app' in inventory_hostname or 'web' in inventory_hostname"
 
-  #yum install rng-tools - already installed 
-  ##edit /etc/sysconfig/rngd and add EXTRAOPTIONS="-r /dev/random" or is it urandom
-  #rngd -r /dev/random as root once rng-tools is installed. Your key generation will take off immediately. - still doesn't seem to do much.
-  # sudo rngd -r /dev/urandom - ha. then immediate. lovely.
+  ##yum install rng-tools - already installed 
+  ###edit /etc/sysconfig/rngd and add EXTRAOPTIONS="-r /dev/random" or is it urandom
+  ##rngd -r /dev/random as root once rng-tools is installed. Your key generation will take off immediately. - still doesn't seem to do much.
+  ## sudo rngd -r /dev/urandom - ha. then immediate. lovely.
 
   # Everyone
   #gpg --gen-key # need to skip the interaction - gpg --batch --generate-key foo - but where store the parameters?
   #gpg --armor --output ~/.gnupg/my_pubkey.txt --export <keyid> where keyid is the email address used during creation
+  # use `sudo rngd -r /dev/urandom` if slow
 
   #cd repo
   #git-crypt init # Presumably I need to do this on every server?
@@ -46,13 +47,21 @@
   #/** filter=git-crypt diff=git-crypt
   #.git* !filter !diff
   # secret.yaml filter=git-crypt diff=git-crypt
+  # this will be development.yaml stage.yaml etc 
+  # Id like it if it added .enc when it uploaded the encrypted file.
 
   #gpg --import some_key.txt # or keyserver 
   #git-crypt add-gpg-user --trusted ABCD1234
 
   #it does encrypt it automatically when I push. Check it decrypts on a separate server.
   #I put the gnupg key on the server as well as the ssh key
-  #don't forget to transfer/commit the .gitattribues
+  #don't forget to commit the .gitattribues too
+
+  git add secret.yaml
+  commit, push. 
+
+  Anyone should be able to edit it and commit the changes, like any other git file. It is automatically encrpted and decrypted on pull. 
+  How does it know who is allowed to decrpyt it?
 
 
 
