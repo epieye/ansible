@@ -1,0 +1,35 @@
+---
+
+- name: install and configure MRTG.
+  hosts: all
+
+  tasks:
+  - name: Install the pre-reqs.
+    yum: name=httpd,php state=latest
+    become: true
+
+  - name: Install the packages. No longer need to install mrtg-libs.
+    yum: name=mrtg state=latest
+    become: true
+
+  - name: Amend /etc/httpd/conf.d/mrtg.conf 
+    replace:
+      dest: /etc/httpd/conf.d/mrtg.conf
+      regexp: '    Require local'
+      replace: '    Allow from all'
+    become: true
+
+  - name: enable and start the service (CentOS7)
+    systemd: name=mrtg state=started enabled=yes
+    become: true
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  #/usr/bin/cfgmaker --global 'WorkDir: /var/www/mrtg' --global 'Options[_]: bits,growright' --output /etc/mrtg/mrtg.cfg public@192.168.2.1
+  #/usr/bin/indexmaker --output=/var/www/mrtg/index.html /etc/mrtg/mrtg.cfg
+  #env LANG=C /usr/bin/mrtg /etc/mrtg/mrtg.cfg
+  #
+  ## Don't forget to allow snmp acces on ASA (snmp-server).
+  ##
+  ## Don't I need a crontab entry?
+  ## */5 * * * * env LANG=C /usr/bin/mrtg /etc/mrtg/mrtg.cfg
+
