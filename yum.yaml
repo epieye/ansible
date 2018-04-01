@@ -20,6 +20,10 @@
     yum: name=git
     become: true
 
+  - name: Install python devel so awscli will compile
+    yum: name=python-devel
+    become: true
+
   # add warren to wheel group
   # amend /etc/sudoers
 
@@ -27,6 +31,79 @@
     pip: name=pip state=latest
     become: true
 
-  - name: Install psycopg2 with pip
+  - name: Install awscli with pip
+    pip: name=awscli
+    become: true
+    tags: aws
+
+  - name: install boto3 with pip
+    pip: name=boto3 state=latest
+    become: true
+    tags: aws
+
+  - name: Install psycopg2 with pip for git-crypt
     pip: name=psycopg2
     become: true
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Install AWS SDK
+    gem: name=aws-sdk
+    become: true
+
+  - name: Install pre-requisites. Probably already installed.
+    yum: name=make,gcc-c++,openssl-devel,git,openssl state=latest
+    become: true
+    tags: git-crypt
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Download software from https://github.com/AGWA/git-crypt
+    unarchive:
+      src: https://github.com/AGWA/git-crypt/archive/master.zip
+      dest: /home/warren
+      remote_src: yes
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+    
+  - name: Running "make" 
+    command: make chdir=/home/warren/git-crypt-master
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+   
+  - name: Running "make install"
+    command: make install chdir=/home/warren/git-crypt-master
+    become: true
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+  
+  - name: Install gnupg. Installed this for something recently.
+    yum: name=gnupg state=latest
+    become: true
+
+  ##yum install rng-tools - already installed 
+  ###edit /etc/sysconfig/rngd and add EXTRAOPTIONS="-r /dev/random" or is it urandom
+  ##rngd -r /dev/random as root once rng-tools is installed. Your key generation will take off immediately. - still doesn't seem to do much.
+  ## sudo rngd -r /dev/urandom - ha. then immediate. lovely.
+
+  #gpg --armor --output ~/.gnupg/my_pubkey.txt --export <keyid> where keyid is the email address used during creation
+  # use `sudo rngd -r /dev/urandom` if slow
+
+  #cd repo
+  #git-crypt init # Only do this on one server.
+  # 
+  #.gitattributes
+  #/** filter=git-crypt diff=git-crypt
+  #.git* !filter !diff
+  # secret.yaml filter=git-crypt diff=git-crypt
+  # this will be development.yaml stage.yaml etc 
+  # I'd like it if it added .enc when it uploaded the encrypted file.
+
+  #gpg --import some_key.txt # or keyserver 
+  #git-crypt add-gpg-user --trusted ABCD1234
+  #Do I need to git-crypt export-key? If so, what do I do with it? Looks like this gets magically transported to the new clone.
+
+  #it does encrypt it automatically when I push. Check it decrypts on a separate server.
+  #I put the gnupg key on the server as well as the ssh key
+  #don't forget to commit the .gitattribues too. I don't think it does it for me.
+
+  #git add secret.yaml
+  #commit, push. 
+
+  #Anyone should be able to edit it and commit the changes, like any other git file. It is automatically encrypted and decrypted on pull. Or do I have to git-crypt unlock every time?
+  #How does it know who is allowed to decrpyt it?
