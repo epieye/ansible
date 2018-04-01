@@ -1,0 +1,37 @@
+---
+
+- name: install temperature sensor
+  hosts: all
+
+  tasks:
+  - name: pre-reqs 
+    yum: name=libusb-devel state=latest
+    become: true
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Download software from https://github.com/AGWA/git-crypt
+    unarchive:
+      src: http://momtchil.momtchev.com/files/pcsensor-1.0.0-multi.tgz
+      dest: /home/warren
+      remote_src: yes
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: copy the rules
+    copy:
+      src: /home/warren/pcsensor-1.0.0/99-tempsensor.rules
+      dest: /etc/udev/rules.d/
+    become: true
+
+  - name: 
+    command: udevadm control --reload-rules
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Running "make"
+    command: make clean chdir=/home/warren/pcsensor-1.0.0
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Running "make"
+    command: make chdir=/home/warren/pcsensor-1.0.0
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+
