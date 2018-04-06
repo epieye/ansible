@@ -1,14 +1,31 @@
 ---
 
-- name: Install and Configure Nagios on any server.
+- name: install and configure Nagios.
   hosts: all
 
   tasks:
-  - name: Install Apache and PHP. Nagios will probably install what it needs.
-    yum: name=httpd,php
+#  - name: Install the pre-reqs. Probably already installed. Do I need to do this if I am not compiling it?
+#    yum: name=glibc,glibc-common,gd,gd-devel,make,net-snmp,openssl-devel,xinetd,unzip
+#    become: true
+
+  - name: Install LAMP
+    yum: name=httpd,mariabdb-server,mariadb,php,php-mysql state=latest
     become: true
 
-  - name: Install Nagios Package
-    yum: name=nagios
+  - name: Install Nagios.
+    yum: name=nagios state=latest
     become: true
 
+  #sudo useradd nagios
+  #sudo groupadd nagcmd
+  #sudo usermod -a -G nagcmd nagios
+
+  - name: Install NRPE
+    yum: name=nrpe state=latest
+    become: true
+
+
+  #- name: enable and start the service (CentOS7)
+  #  systemd: name=nagios state=started enabled=yes
+  #  become: true
+  #  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
