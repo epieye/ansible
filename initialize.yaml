@@ -1,4 +1,4 @@
-Here or in post-install
+# Here or in post-install
 
 ssh-keygen -t rsa
 copy keys from mbp and kalahari to .ssh/authorized_keys
@@ -6,4 +6,33 @@ chmod 400 authorized_keys
 
 sudo vi /etc/sudoers
 
+# move user-level stuff to ansible
+#echo "autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o" > /home/warren/.vimrc
+#echo "autocmd BufRead * set tw=0"                                                    >> /home/warren/.vimrc
+#chown warren:warren /home/warren/.vimrc
 
+#echo " "                                    >> /home/warren/.bash_profile
+#echo "export HISTTIMEFORMAT='%m/%d/%y %T '" >> /home/warren/.bash_profile
+#echo "export HISTSIZE=10000"                >> /home/warren/.bash_profile
+#echo "unset HISTFILESIZE"                   >> /home/warren/.bash_profile
+
+# alias x=exit
+
+# git
+# aws
+
+#exit # leave user warren
+
+# ssh-keygen -t rsa
+
+# mkdir /home/warren/.ssh
+# cat <<EOF > /home/warren/.ssh/authorized_keys
+# ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDocfZv2BSQ4xhNplNbS/7h/sHMQCGVdjW8IK0xFAkFdYoJzoikzdeQemCZXaqHGBjiCt+s/ZzzdDCN8TSDP2JwKRWBGbLF2p7mjooUWKBHrkcq6LtkgKps+tmKs1q74ehulOa11S3k1x4ORQ0norI7YbKKmkuhfes3fucJQGV2JBHpqtPhLYBLwztkcF4Yty91XUT/IrxaioZMsnZO8zij2kAfCbMCTtwmMTwYdfM1lkMLEDN4m/XYE4fiWVPo3iTlwtCmr+AfteGxDy/c11BL5exyletN4BF51FWAAmFGIEKw5yRM0NWY4tWVD4/Mf/IRzrYNhjrePh7oJmKYv86p matthews@Warrens-MacBook-Pro.local
+# ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA1Cba3PVIP9b6Yv/XBI0KEIAzGADsubBrYWGa/p/Tj32jvneKQSTJ1CatICNPlnhUktCsOu+Ya0NiqGJM+LYfNi8y0yp1yaRZmCzsaiDttGpudELaj1QkC1lZttnFGn3WrvGhnqUAY34WMwsgnZ+O0Tay/sNJIPlbHn/IZWAKBShhROlr4FpXskahWV6v7FE89wbCtP63v4zXAl0KkHk0KkwOpJySbm1/VYSAxqkZEhFgxIU5Sfy9c+I5lw+iFGtXnklJCVn7s5XI/WMjlhU+6NpEUX2L0vP+Q7bFqzw4SpvpYlTJTZEu0ACNJ9FC+aO5Or0B9KY3kOWVIpoQe5wUYw== warren@kalahari.ourzoo.us
+# EOF
+# chown -R warren:warren /home/warren/.ssh
+# chmod 600 /home/warren/.ssh/authorized_keys
+#
+# # sudoers
+# #sed -i.bak "s/^%wheel  ALL=(ALL)       ALL/#%wheel   ALL=(ALL)       ALL/" /etc/sudoers
+# sed -i.bak "s/^# %wheel  ALL=(ALL)       ALL/%wheel  ALL=(ALL)       NOPASSWD: ALL/" /etc/sudoers
