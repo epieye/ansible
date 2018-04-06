@@ -1,0 +1,52 @@
+---
+
+- name: Create git-server and secure with git-crypt
+  hosts: all
+
+  tasks:
+  - name: Add git user
+    user:
+      name: git
+      comment: "Git User"
+      password: $1$MelHv4S1$x3IW9fB2PxoWag8.W4lqE0 # Actually make this no-login if I can. 
+      #shell: /sbin/nologin or /usr/bin/git-shell
+      # generate_ssh_key: yes
+      # ssh_key_bits: 2048
+      # ssh_key_file: .ssh/id_rsa
+    become: true
+
+  - name: Install git. Probably already installed.
+    yum: name=git
+    become: true
+
+
+#xxdo su - git
+#
+#ssh-keygen -t rsa # mkdir ~/.ssh && touch ~/.ssh/authorized_keys
+#
+## add public_keys in authorized_keys. Just like deveo! <- everyone needs to copy their public key.
+
+#git init --bare ssp-configs.git
+
+
+-- then on local machine --
+
+cd ssp-configs
+echo "bob" >> production.yaml
+echo "bob" >> stage.yaml
+echo "bob" >> development.yaml
+
+git remote set-url origin git@tanami.ourzoo.us:ssp-configs.git
+git init && git remote add origin git@tanami.ourzoo.us:ssp-configs.git
+
+git add
+git commit 
+git push --set-upstream origin master
+
+-- on yet another machine --
+
+# copy the public key
+git clone git@192.168.2.58:ssp-configs.git
+
+NOW ADD GIT-CRYPT
+
