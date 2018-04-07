@@ -1,52 +1,464 @@
+# when tag is client, make sure git_server is provided
+# ansible-playbook -i inventory git-server.yaml --tags server --limit tanami.ourzoo.us
+# ansible-playbook -i inventory git-server.yaml --tags client --extra-vars "git_server=tanami.ourzoo.us" --limit karakum.ourzoo.us
+# remember: git-crypt only works on CentOS7
 ---
 
 - name: Create git-server and secure with git-crypt
   hosts: all
 
-  tasks:
-  - name: Add git user
-    user:
-      name: git
-      comment: "Git User"
-      password: $1$MelHv4S1$x3IW9fB2PxoWag8.W4lqE0 # Actually make this no-login if I can. 
-      #shell: /sbin/nologin or /usr/bin/git-shell
-      # generate_ssh_key: yes
-      # ssh_key_bits: 2048
-      # ssh_key_file: .ssh/id_rsa
-    become: true
+  vars:
+    repo: ssp-configs
+    git_user: git
 
+  tasks:
   - name: Install git. Probably already installed.
     yum: name=git
+    tags: 
+      - server
+      - client
     become: true
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Add git user
+    user:
+      name: "{{ git_user }}"
+      comment: "Git User"
+      #shell: /usr/bin/git-shell # fatal: Interactive git shell is not enabled. hint: ~/git-shell-commands should exist and have read and execute access.
+      generate_ssh_key: yes
+    tags:
+      - server
+    become: true
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Copy public key for client. Find a better way.
+    authorized_key:
+      user: git
+      key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDHBicDZ9Snshbze86r+kbfHEtoSKmCHAR9ngjhc75DXrb9cBRbfm2AtPkHkiDzK2WVtFK2vanaRCmg+mnZsSe6e4mMxQFmA+6B1ZP3m5TWTWSBBP/n9VB7AytYZTT00JlKxgjCBJNsoMNe8VBL6yDJCJU6DEnKRvzH5YS5EZ37O///LuhqfojyW/tlgHOwnBUN66QNetv3PNLytD08FGHPpI90VHbcYoh7NNextuCSM15BgdB6/8PNvKK1Y4qHWJKN9BA9bPcMZU9I1CKhP0XlvJx6sWbBZ5gAleGyGrPjvwVJfLyz2hs0O99RQzg7nWeLPq+4K+pZAti9JBosfIq3 warren@karakum"
+    tags:
+      - server
+    become: true
+    become_user: git 
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Copy public for another client. See above.
+    authorized_key:
+      user: git
+      key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0n4EDl6ksSuiQTw9Jt6rLbCo0b+rDCuAFDCN2Y5vxihDR8kKx7JHkIZLH7njAy4kDSaqjRbBE86Gfq36JCfZFYjxzBNDAeIDoM9irBuaq7iOOJs94H/d+48HIPrxa8oeHYsrwAyTZqJZsc4euI6/IMnB+wLYuC++zo0INxWLQhhtiB70rc+Uf/fG8JX/vF6GXbd18x46kBea6PvN3OpfyMnX5onYotXL09IABCUZqZyb0q+GFyHXBBSi6V1VDboGOXerpdbqWcAwXm5NxOkPx7mohNIGrR+JdBKcMj+mGSf9qZsbi+djJbFB0OOVkL8SrXNKDHuXUWHn9L3GmSOLB warren@mojave"
+    tags:
+      - server
+    become: true
+    become_user: git 
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Create repo directory on the server
+    file: path="/home/{{ git_user }}/{{ repo }}" state=directory
+    tags:
+      - server
+    become: true
+    become_user: git
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Initialize the git repository on the server
+    command: git init --bare {{ repo }}.git
+    args:
+      chdir: "/home/{{ git_user }}"
+      creates:  "/home/{{ git_user }}/{{ repo }}/.git"
+    tags:
+      - server
+    become: true
+    become_user: git
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Check if the config files already exist on the client. We don't want to overwrite them.
+    stat: path="/home/{{ ansible_user_id }}/{{ repo }}/production.yaml"
+    register: config_files
+    tags:
+      - client
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Create repo directory if it doesn't exist already
+    file: path="/home/{{ ansible_user_id }}/{{ repo }}" state=directory
+    tags:
+      - client
+    when: config_files.stat.exists == False and ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: init git
+    command: git init
+    args:
+      chdir: "/home/{{ ansible_user_id }}/{{ repo }}/"
+      creates: "/home/{{ ansible_user_id }}/{{ repo }}/.git"
+    tags:
+      - client
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: git magic.
+    command: "git remote add origin git@{{ git_server }}:{{ repo }}.git"
+    args:
+      chdir: "/home/{{ ansible_user_id }}/{{ repo }}/"
+    tags:
+      - client
+    ignore_errors: True
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: more git magic. 
+    command: "git remote set-url origin git@{{ git_server }}:{{ repo }}.git"
+    args:
+      chdir: "/home/{{ ansible_user_id }}/{{ repo }}/"
+    tags:
+      - client
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Create the files. Surely I should/could do this on the server.
+    copy:
+      content: "{{ item }}"
+      dest: "/home/{{ ansible_user_id }}/{{ repo }}/{{ item }}.yaml"
+    tags:
+      - client
+    with_items:
+      - production
+      - stage
+      - development
+    when: config_files.stat.exists == False and ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: add the files to the repo.
+    command: "git add {{ item }}.yaml"
+    args:
+      chdir: "/home/{{ ansible_user_id }}/{{ repo }}/"
+    tags:
+      - client
+    with_items:
+      - production
+      - stage
+      - development
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: commit the files to the repo.
+    command: "git commit -m 'initial commit'"
+    args:
+      chdir: "/home/{{ ansible_user_id }}/{{ repo }}/"
+    tags:
+      - client
+    ignore_errors: True
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: push the files to the repo.
+    command: "git push -u origin master"
+    args:
+      chdir: "/home/{{ ansible_user_id }}/{{ repo }}/"
+    tags:
+      - client
+    ignore_errors: True
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Install psycopg2 with pip for git-crypt
+    pip: name=psycopg2
+    tags:
+      - client
+      - server
+    become: true
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Install pre-requisites for git-crypt. Probably already installed.
+    yum: name=make,gcc-c++,openssl-devel,git,openssl,rng-tools state=latest
+    become: true
+    tags:
+      - client
+      - server
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Download software from https://github.com/AGWA/git-crypt
+    unarchive:
+      src: https://github.com/AGWA/git-crypt/archive/master.zip
+      dest: "/home/{{ ansible_user_id }}"
+      remote_src: yes
+    tags:
+      - client
+      - server
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+    
+  - name: Running "make" 
+    command: 'make chdir=/home/{{ ansible_user_id }}/git-crypt-master/'
+    tags:
+      - client
+      - server
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+   
+  - name: Running "make install"
+    command: 'make install chdir=/home/{{ ansible_user_id }}/git-crypt-master'
+    become: true
+    tags:
+      - client
+      - server
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+  
+  - name: Install gnupg.
+    yum: name=gnupg state=latest
+    become: true
+    tags:
+      - client
+      - server
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Init git-crypt. Only do this on one server.
+    command: git-crypt init
+    args:
+      chdir: "/home/{{ ansible_user_id }}/{{ repo }}/"
+      creates: "/home/{{ ansible_user_id }}/{{ repo }}/.git/git-crypt/keys/default"
+    tags:
+      - client
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: 
+    copy:
+      content: "production.yaml filter=git-crypt diff=git-crypt\nstage.yaml filter=git-crypt diff=git-crypt\ndevelopment.yaml filter=git-crypt diff=git-crypt"
+      dest: "/home/{{ ansible_user_id }}/{{ repo }}/.gitattributes"
+    tags:
+      - client
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  ##don't forget to commit the .gitattribues too. I don't think it does it for me.
+  #- name: add the files to the repo.
+  #  command: "git add {{ item }}.yaml"
+  #  args:
+  #    chdir: "/home/{{ ansible_user_id }}/{{ repo }}/"
+  #  tags:
+  #    - client
+  #  with_items:
+  #    - production
+  #    - stage
+  #    - development
+  #  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+  #
+  #- name: commit the files to the repo.
+  #  command: "git commit -m 'initial commit'"
+  #  args:
+  #    chdir: "/home/{{ ansible_user_id }}/{{ repo }}/"
+  #  tags:
+  #    - client
+  #  ignore_errors: True
+  #  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+  #
+  #- name: push the files to the repo.
+  #  command: "git push -u origin master"
+  #  args:
+  #    chdir: "/home/{{ ansible_user_id }}/{{ repo }}/"
+  #  tags:
+  #    - client
+  #  ignore_errors: True
+  #  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
 
 
-#xxdo su - git
+
+
+
+
+
+
+
+
+
+
+
+
+  - name: Note well
+    debug:
+      msg: "On yet another machine, try cloning the repo with 'git clone git@192.168.2.58:{{ repo }}.git`"
+    tags:
+      - client
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+
+
+# Is it worth trying to automate gnupg? Probably not. So everyone:
+
+# On the client:
+# gpg --gen-key # follow the prompts. In another window 'sudo rngd -r /dev/urandom`
+# gpg --export-secret-key -a "Warren Matthews" > private.key
+# scp the private key to all the servers where you want to clone the configs. Import it into gpg (?) gpg --import private.key 
 #
-#ssh-keygen -t rsa # mkdir ~/.ssh && touch ~/.ssh/authorized_keys
+# export public key too: gpg --armor --output ~/.gnupg/public.key --export <keyid> # where keyid is the email address used during creation
+# scp that too 
+# gpg --import private.key 
+# gpg --list-keys
+# gpg --edit-key "Key ID"  # trust -> 5 -> quit
+# git-crypt add-gpg-user --trusted 84DDD7B5 # Does git-crypt distribute everyone's public key in .git-grypt/ ? # presumably on any client that already has git-crypt
 #
-## add public_keys in authorized_keys. Just like deveo! <- everyone needs to copy their public key.
+# On all clients, copy gpg public and private key. Or at least the private key. git-crypt might take care of copying the public key
+# copy (or send to Sean/me) ssh public key to ~git/.ssh/authorized_keys
+# presumably we leave the files encrypted om the server (no gnupg keys)
 
-#git init --bare ssp-configs.git
+# On the other clients
+#git clone git@github.com:epieye/ansible.git
+#git-crypt unlock
 
 
--- then on local machine --
 
-cd ssp-configs
-echo "bob" >> production.yaml
-echo "bob" >> stage.yaml
-echo "bob" >> development.yaml
 
-git remote set-url origin git@tanami.ourzoo.us:ssp-configs.git
-git init && git remote add origin git@tanami.ourzoo.us:ssp-configs.git
 
-git add
-git commit 
-git push --set-upstream origin master
 
--- on yet another machine --
 
-# copy the public key
-git clone git@192.168.2.58:ssp-configs.git
 
-NOW ADD GIT-CRYPT
 
+
+
+
+
+git-crypt status
+
+
+
+
+
+
+
+#aside: 
+#can you completely eradicate a file from git if you commit it unencrypted?
+#ideas: https://stackoverflow.com/questions/2004024/how-to-permanently-delete-a-file-stored-in-git
+
+
+
+well it does work - unlock/lock do what it says on the tin
+I can manually copy the directory to appdev02 and try unlocking it
+
+Excellent. It was the unlock that I was having trouble with.
+
+
+worked fine
+not nec. exactly the same as doing it via a remote repo, but still, good news
+
+Great. I suspected my issue was more gnupg than git-crpyt. Did you import your key before unlocking?
+
+
+have to import and then edit to set the trust to full
+otherwise you get a message about how its unusable
+
+I wasn’t sure I did that right. How do you do that? (set trust to full?). DO you manually edit it?
+
+
+gpg --edit-key <your key name/id>
+at the gpg> prompt enter    trust
+select 5 (full trust)
+quit
+
+
+I emailed you mine
+gpg --export <key id/name>  --armor    # spits out a mime encoded public key block
+
+So I am still doing something wrong. I copied my key from one server to another, trusted it “ultimately” but when I try to git-crypt unlock I still get Error: no GPG secret key available to unlock this repository.
+
+
+gpg --list-secret-keys
+[sesawyer@us-atl01-appdev01 gns-configs]$ gpg --list-secret-keys
+/home/sesawyer/.gnupg/secring.gpg
+---------------------------------
+sec   2048D/425AF21E 2018-03-28 [expires: 2020-03-28]
+uid                  Sean Sawyer <sean.sawyer@here.com>
+ssb   2048g/62CE956B 2018-03-28
+should look like that
+
+ah, what’s the difference between keys and secret keys?
+
+
+well
+
+[warren@karakum ansible]$ gpg --list-secret-keys
+[warren@karakum ansible]$ gpg --list-keys
+/home/warren/.gnupg/pubring.gpg
+-------------------------------
+pub   2048R/84DDD7B5 2018-03-27
+uid                  Warren Matthews <warren.matthews@here.com>
+sub   2048R/02B520AD 2018-03-27
+
+
+right
+so you imported the public key
+the public key has a corresponding private key
+
+doh
+gpg --armor --output ~/.gnupg/my_pubkey.txt --export warren.matthews@here.com
+
+
+yeah I think thats public only
+was for me anyway
+gpg --export-secret-key -a "User Name" > private.key
+once you've safely imported it elsewhere delete the file
+
+what’s the correct command for importing it?
+
+
+--import
+it knows which is which based on the block header
+but you'll have to edit the trust as shown above
+
+oh, —export-secret-key
+oh wait.
+so I exported the key as above, scp’d it to the other server, and imported it with gpg --import my_pubkey.txt
+
+
+well pubkey would be incorrect but ok
+
+so did I export the private key?
+I’m so confused
+
+
+--export-secret-key # exports private key
+--export # exports public key
+--import # imports whatever you feed it
+
+
+if you cat the file
+it will say "PUBLIC" or "PRIVATE" key at the top and bottom as well, so its easy to verify
+
+Indeed it does say public.
+
+
+right use the --export-secret-key thing from above
+
+oh, after I scp it?
+
+
+after? no after isn't going to help
+on the system you generated the key on
+you have to    gpg --export-secret-key -a "User Name" > private.key
+scp that private.key to wherever
+gpg --import private.key
+gpg --edit-key "Key ID"  # trust -> 5 -> quit
+
+ah, scp the private key.  Gotcha.
+
+Alright.
+Thanks.
+
+So everyone has to import and trust everyone else’s public key in gnupg, then also add it when they git-cyrpt init
+on every server where they might edit/commit the file(s)
+
+
+no I don't think so
+
+oh good grief
+
+
+it should work this way
+pick a server to create/setup the repos on
+import everyone's public key
+git-crypt init
+git-crypt add everyone's public keys
+commit, push up etc
+that takes care of giving people access
+
+oh right, then everyone's public key is then in .git-crypt/
+
+
+basically
+
+ok good
+
+
+now if you PERSONALLY want to unlock the repo elsewhere you would need your own private key
+but you don't need anyone else's
+
+got it
+
+
+(this is how whole disk encryption works, basically)
