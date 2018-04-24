@@ -1,6 +1,6 @@
 ---
 
-- name: upgrade yum packages on servers.
+- name: install and upgrade yum packages on servers.
   hosts: all
 
   tasks:
@@ -9,19 +9,19 @@
     become: true
 
   - name: Install Epel and yum-utils
-    yum: name=epel-release,yum-utils 
+    yum: name=epel-release,yum-utils state=latest
     become: true
 
   - name: Install Ansible
-    yum: name=ansible
+    yum: name=ansible state=latest
     become: true
 
   - name: Install Git
-    yum: name=git
+    yum: name=git state=latest
     become: true
 
   - name: Install python devel so awscli will compile
-    yum: name=python-devel
+    yum: name=python-devel state=latest
     become: true
 
   # add warren to wheel group
