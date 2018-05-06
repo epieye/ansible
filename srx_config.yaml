@@ -1,0 +1,77 @@
+# SRX does not support ZTP
+# 
+# - set system root-authentication encrypted-password "$1$I.WbWqGW$ag73oBNBPZakWrxeFJNhT0"
+# - delete interfaces vlan unit 0 family inet address 192.168.1.1/24
+# - set interfaces vlan unit 0 family inet dhcp
+# - set system services netconf ssh
+#
+# Maybe `export ANSIBLE_HOST_KEY_CHECKING=False` too
+# ansible-playbook -i inventory srx_config.yaml --user root --ask-pass --limit srx
+
+---
+- name: Configure SRX
+  hosts: srx
+  connection: local
+  gather_facts: no
+
+  tasks:
+  - name: load configure lines into device
+    junos_config:
+      lines:
+        - set system host-name srx
+        #- delete system services dhcp
+        #- delete system services web-management
+        ##- set system authentication-order [ radius password ]
+        ##- set system radius-server 192.168.2.4 secret "$9$9j.Xp1heK87NbevxdVwJZ"
+        - set system login announcement "\n                                                            \n   SSSSSSSSSSSSSSS RRRRRRRRRRRRRRRRR   XXXXXXX       XXXXXXX\n SS:::::::::::::::SR::::::::::::::::R  X:::::X       X:::::X\nS:::::SSSSSS::::::SR::::::RRRRRR:::::R X:::::X       X:::::X\nS:::::S     SSSSSSSRR:::::R     R:::::RX::::::X     X::::::X\nS:::::S              R::::R     R:::::RXXX:::::X   X:::::XXX\nS:::::S              R::::R     R:::::R   X:::::X X:::::X   \n S::::SSSS           R::::RRRRRR:::::R     X:::::X:::::X    \n  SS::::::SSSSS      R:::::::::::::RR       X:::::::::X     \n    SSS::::::::SS    R::::RRRRRR:::::R      X:::::::::X     \n       SSSSSS::::S   R::::R     R:::::R    X:::::X:::::X    \n            S:::::S  R::::R     R:::::R   X:::::X X:::::X   \n            S:::::S  R::::R     R:::::RXXX:::::X   X:::::XXX\nSSSSSSS     S:::::SRR:::::R     R:::::RX::::::X     X::::::X\nS::::::SSSSSS:::::SR::::::R     R:::::RX:::::X       X:::::X\nS:::::::::::::::SS R::::::R     R:::::RX:::::X       X:::::X\n SSSSSSSSSSSSSSS   RRRRRRRR     RRRRRRRXXXXXXX       XXXXXXX\n\n;;"
+        - set system login message "boo!;"
+      comment: basic config
+
+
+
+
+
+#   login {
+#        class admin {
+#            idle-timeout 120;
+#            login-alarms;
+#            permissions all;
+#        }
+#        user remote {
+#            uid 2001;
+#            class admin;
+#        }
+#    }
+#
+#no        telnet;
+#
+#
+#
+#
+#    archival {
+#        configuration {
+#            transfer-on-commit;
+#            archive-sites {
+#                ftp://192.168.2.4/srx.cfg;
+#                ftp://192.168.1.82/srx.cfg;
+#            }
+#        }
+#    }
+# 
+#
+#
+#
+#
+#
+#snmp {
+#    location "spare-room;";
+#    contact warren;
+#    community public {
+#        authorization read-only;
+#        clients {
+#            192.168.2.0/24;
+#        }
+#    }
+#}
+
+
