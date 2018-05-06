@@ -271,7 +271,9 @@
 
 
 # Is it worth trying to automate gnupg? Probably not. So everyone:
+# Actually do automate gen key for git user
 
+# everyone:
 # On the client:
 # gpg --gen-key # follow the prompts. In another window 'sudo rngd -r /dev/urandom`
 # gpg --export-secret-key -a "Warren Matthews" > private.key
