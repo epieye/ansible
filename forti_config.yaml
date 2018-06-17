@@ -1,0 +1,23 @@
+# remember to pip install pyFG in standard post-install (pyfg - Python API for fortigate)
+# first: sudo pip install --upgrade setuptools
+# sudo yum install python34 python34-pip; sudo pip3 install --upgrade pip; sudo pip3 install pyFG 
+# pip3 install ansible: Ansible requires a minimum of Python2 version 2.6 or Python3 version 3.5. FFS.
+# sudo yum install python36 python36-pip; No package python36-pip available
+---
+- name: Forti config Test
+  hosts: all
+  connection: local
+  gather_facts: true
+  vars: 
+    creds: 
+      host: "{{ ansible_host }}"
+      username: admin
+
+  tasks:
+  - name: Backup current config
+    fortios_config:
+      host: 192.168.1.84
+      username: warren
+      password: MJU&6tfc
+      backup: yes
+      backup_path: /home/warren

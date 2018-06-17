@@ -1,0 +1,28 @@
+---
+- name: FortiTest
+  hosts: all
+  connection: local
+  gather_facts: true
+  vars: 
+    creds: 
+      host: "{{ ansible_host }}"
+      username: admin
+
+  tasks:
+  - name: get facts from device
+    debug:
+      msg: "{{ hostvars }}"
+
+
+
+
+- name: Register some fqdn
+  fortios_address:
+    host: 192.168.0.254
+    username: admin
+    password: p4ssw0rd
+    state: present
+    name: "Ansible"
+    type: fqdn
+    value: www.ansible.com
+    comment: "Ansible website"

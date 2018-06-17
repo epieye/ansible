@@ -1,0 +1,21 @@
+---
+- name: FortiTest
+  hosts: all
+  connection: local
+  gather_facts: true
+  vars: 
+    creds: 
+      host: "{{ ansible_host }}"
+      username: admin
+
+  tasks:
+  #- name: get facts from device
+  #  debug:
+  #    msg: "{{ hostvars }}"
+
+
+  #- name: get facts from device
+  #  debug:
+  #    msg: "{{ ansible_facts }}"
+
+
