@@ -1,0 +1,267 @@
+---
+#I just don't know what it all means yet
+#docker_image to create an image
+#docker_container
+#docker_service
+
+- name: install and configure docker
+  hosts: all
+
+  tasks:
+  - name: Install docker
+    yum: 
+      name: docker 
+      state: latest
+    become: true
+
+  - name: Add user to dockerroot group
+   
+
+  - name: start docker service. probably enable it too
+    service:
+      name: docker
+      state: started
+      #enabled: yes
+    become: true
+
+  - name: create a directory if it doesn't exist. Change user name to the ansible variable
+    file:
+      path: /home/warren/web_server/
+      state: directory
+      mode: 0755
+
+  - name: copy working test script. 
+    copy:
+      dest: /home/warren/web_server/README.docker
+      content: |
+        # This works.
+        sudo docker run -it -p 1234:80 centos /bin/bash
+        #  yum -y update
+        #  yum -y install httpd
+        #  cp index.html /var/www/html
+        #  /usr/sbin/httpd -D FOREGROUND
+
+  - name: Docker file. This does not work.
+    copy:
+      dest: /home/warren/web_server/Dockerfile
+      content: |
+        FROM centos:latest
+        MAINTAINER warren.matthews@here.com
+
+        RUN yum -y update
+        RUN yum -y install httpd
+        COPY index.html /var/www/html
+
+        #ENTRYPOINT ["/bin/bash", "-c", "ls -l /usr/sbin/httpd"]
+        #  RUN ["/bin/bash", "-c", "ls -l /usr/sbin/httpd"]
+        #
+        #  CMD [“/usr/sbin/httpd", "-D", "FOREGROUND”]
+        #
+        #
+        #  # Make port 80 available to the world outside this container
+        #  EXPOSE 80
+
+
+#---
+#- name: Docker
+#  hosts: all
+#
+#  tasks:
+#  - name: Create a data container
+#    docker_container:
+#      name: mytest
+#      image: centos:7
+#      volumes:
+#        - /data
+
+# Dockerfile
+#
+#  FROM centos:7
+#  MAINTAINER warren.matthews@here.com
+#
+#  RUN yum -y update
+#  #RUN yum -y install sshd 
+#  #RUN yum -y install wget
+#  #RUN yum install –y nginx 
+#  #EXPOSE 22 CMD ["systemctl", "start", "sshd"]
+#  #EXPOSE 80 CMD [“apache2ctl”, “-D”, “FOREGROUND”] # Is is because I am demonizing it? The docker process terminates. But it does say FOREGROUND.
+#  CMD [“echo”,”Image created”] 
+
+## Documentation
+#
+#https://www.tutorialspoint.com/docker/docker_file.htm
+#https://takacsmark.com/dockerfile-tutorial-by-example-dockerfile-best-practices-2018/
+#
+## BUILD
+#
+#docker build  -t ImageName:TagName . # 
+#dzdo docker images
+#
+## can back up to docker hub. See docs
+#
+## RUN
+#
+#docker run -d -p 80:80 matthews_dev
+
+
+
+
+## Rails. Start with the centos image.
+#sudo docker run -it -p 3000:3000 centos /bin/bash
+# yum -y update
+# yum install -y epel-release
+# yum install -y wget gcc gcc-c++ make openssl openssl-devel zlib zlib-devel libxml2-devel libxslt-devel sqlite-devel nodejs
+#
+# yum install -y http://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7.6-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+# yum install -y postgresql96-devel postgresql96-libs
+#
+# wget https://cache.ruby-lang.org/pub/ruby/2.6/ruby-2.6.1.tar.gz
+# tar xzf ruby-2.6.1.tar.gz 
+# cd ruby-2.6.1
+# ./configure
+# make
+# make install
+# cd ..
+## #bundle config build.nokogiri --use-system-libraries
+## #bundle install
+# gem install nokogiri -- --use-system-libraries --with-xml2-config=/usr/bin/xml2-config --with-xslt-config=/usr/bin/xslt-config
+#
+# gem install pg -- --with-pg-config=/usr/pgsql-9.6/bin/pg_config
+#
+# #gem install sqlite3 --version 1.3.6
+# gem install execjs therubyracer mini_portile2 
+# #gem uninstall bundler
+# #rm Gemfile.lock 
+# #bundle install
+# gem install rails
+# rails new bobtastic
+# cd bobtastic
+# sed -i "s/gem 'sqlite3'/gem 'sqlite3', '~> 1.3.6'/" Gemfile 
+# bundle update
+# rails server
+
+# # gem 'sqlite3', '~> 1.3.6'
+# # bundle update 
+
+  - name: create a directory if it doesn't exist. Change user name to the ansible variable
+    file:
+      path: /home/warren/rails_server/
+      state: directory
+      mode: 0755
+
+  - name: Again but in a dockerfile
+    copy:
+      dest: /home/warren/rails_server/Dockerfile
+      content: |
+        FROM centos:latest
+        MAINTAINER warren.matthews@here.com
+
+        RUN yum -y update
+        RUN yum install -y epel-release
+        RUN yum install -y wget gcc gcc-c++ make openssl openssl-devel zlib zlib-devel libxml2-devel libxslt-devel sqlite-devel nodejs
+
+        RUN yum install -y http://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7.6-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+        RUN yum install -y postgresql96-devel postgresql96-libs
+
+        RUN wget https://cache.ruby-lang.org/pub/ruby/2.6/ruby-2.6.1.tar.gz
+        RUN tar xzf ruby-2.6.1.tar.gz
+        WORKDIR "/ruby-2.6.1"
+        RUN ./configure
+        RUN make
+        RUN make install
+        WORKDIR "/"
+        RUN gem install nokogiri -- --use-system-libraries --with-xml2-config=/usr/bin/xml2-config --with-xslt-config=/usr/bin/xslt-config
+        RUN gem install pg -- --with-pg-config=/usr/pgsql-9.6/bin/pg_config
+        RUN gem install execjs therubyracer mini_portile2
+        RUN gem install rails
+        RUN rails new bobtastic
+        WORKDIR "bobtastic"
+        RUN sed -i "s/gem 'sqlite3'/gem 'sqlite3', '~> 1.3.6'/" Gemfile 
+        RUN bundle update
+
+        EXPOSE 3000
+        ECHO "sudo docker run -p 3000:3000 <image> # make a name for it."
+        CMD ["rails", "server", "-b", "0.0.0.0"]
+
+# Again but start with a rails image
+# IS this a rails image: sudo docker run -it -p 3000:3000 starefossen/ruby-node:2-8-stretch /bin/bash
+
+
+## https://auth0.com/blog/ruby-on-rails-killer-workflow-with-docker-part-1/
+#FROM starefossen/ruby-node:2-8-stretch
+#RUN apt-get update -qq && \
+#    apt-get install -y nano build-essential libpq-dev && \
+#    gem install bundler
+#RUN mkdir /project
+#COPY Gemfile Gemfile.lock /project/
+#WORKDIR /project
+#RUN bundle install
+#COPY . /project
+
+
+
+
+
+## Again using docker-compile
+#In docker-compose.yml you can inject env vars from this file with env_file:
+#
+#app:
+#  build: .
+#  ports:
+#   - "3000:3000"
+#  volumes:
+#    - .:/app
+#  links:
+#    - db
+#  environment:
+#    - DOCKERIZED=true
+#  env_file:
+#    - ".env"
+
+
+  - name: create a directory if it doesn't exist. Change user name to the ansible variable
+    file:
+      path: /home/warren/docker_cron/
+      state: directory
+      mode: 0755
+
+  - name: copy working test script.
+    copy:
+      dest: /home/warren/docker_cron/Dockerfile
+      content: |
+        # This works. I should import a ready-made ruby image.
+        FROM centos:latest
+        MAINTAINER warren.matthews@here.com
+
+        RUN yum -y update
+        RUN yum install -y epel-release
+        RUN yum install -y wget gcc gcc-c++ make openssl openssl-devel zlib zlib-devel libxml2-devel libxslt-devel sqlite-devel nodejs
+
+        RUN yum install -y http://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7.6-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+        RUN yum install -y postgresql96-devel postgresql96-libs
+
+        RUN wget https://cache.ruby-lang.org/pub/ruby/2.6/ruby-2.6.1.tar.gz
+        RUN tar xzf ruby-2.6.1.tar.gz
+        WORKDIR "/ruby-2.6.1"
+        RUN ./configure
+        RUN make
+        RUN make install
+        WORKDIR "/"
+
+        COPY script.rb .
+        CMD ["ruby", "script.rb"]
+
+        # https://nickjanetakis.com/blog/docker-tip-40-running-cron-jobs-on-the-host-vs-in-a-container
+        # sudo docker build . --tag cronthis
+        # sudo docker run -it cronthis
+
+  - name: this would be the get_vpc_requests.rb script
+    copy:
+      dest: /home/warren/docker_cron/script.rb
+      content: |
+        # This works. I should import a ready-made ruby image.
+        puts "Let's get started"
+
+        (1..10).each do |i|
+          puts i
+        end
