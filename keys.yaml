@@ -1,0 +1,27 @@
+---
+- name: Initial set up for Bobby Kennedy
+  hosts: all
+
+
+
+# set  hostname
+# static IP 192.168.1.28
+# install git
+# yum install docker
+# adduser
+# ssh keygen
+# copy keys
+# sshd no root login
+# maybe key only
+# vimrc
+# bash profile x ls history
+
+# Pause to add key to github 
+# clone ansible
+
+dnsmasq
+dhcpd
+tftpd
+pxe
+
+nfs
