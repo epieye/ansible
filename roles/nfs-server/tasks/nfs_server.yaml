@@ -1,0 +1,10 @@
+---
+- name: Install yum packages
+  yum:
+    name: nfs-utils,nfs-utils-lib
+  become: true
+
+- name: start service
+
+- name: enable service
+  
