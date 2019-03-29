@@ -1,11 +1,12 @@
 ---
-- name: Initial set up for Bobby Kennedy
+- name: Initial set up for Bobby Kennedy. ansible-playbook -i 192.168.1.168 keys.yaml --ask-pass
   hosts: all
 
+  tasks:
+  - name: set hostname
 
 
-# set  hostname
-# static IP 192.168.1.28
+  - name: set static IP 192.168.1.28
 # install git
 # yum install docker
 # adduser
@@ -19,9 +20,9 @@
 # Pause to add key to github 
 # clone ansible
 
-dnsmasq
-dhcpd
-tftpd
-pxe
+#dnsmasq
+#dhcpd
+#tftpd
+#pxe
 
-nfs
+#nfs

@@ -1,0 +1,45 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+
+    - name: create instance
+      ec2:
+         key_name: my_key
+         group: test
+         instance_type: t2.micro
+         image: "ami-26ebbc5c"
+         wait: true
+         exact_count: 1
+         count_tag:
+            Name: Demo
+         instance_tags:
+            Name: Demo
+      register: ec2
+
+
+
+
+
+
+#ec2 = Aws::EC2::Resource.new(region: 'us-east-1')
+#
+#instance = ec2.create_instances({
+#  image_id: 'ami-26ebbc5c',
+#  key_name: 'Maurice',
+#  security_group_ids: ['sg-3fa9bc49'],
+#  user_data: encoded_script,
+#  placement: {
+#    availability_zone: 'us-east-1a'
+#  },
+#  subnet_id: 'subnet-cefe5de5',
+#})
+#
+## Wait for the instance to be created, running, and passed status checks
+#ec2.client.wait_until(:instance_status_ok, {instance_ids: [instance.first.id]})
+# 
+## Name the instance 'MyGroovyInstance' and give it the Group tag 'MyGroovyGroup'
+#instance.batch_create_tags({ tags: [{ key: 'Bob', value: 'Your_Uncle' }, { key: 'this', value: 'that' }]})
+ 
