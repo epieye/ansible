@@ -1,0 +1,18 @@
+---
+- name: Update packages
+  yum: 
+    name: *
+    state: latest
+  become: true
+
+- name: Install required packages
+  yum: 
+    name: dhcp,httpd,xinetd,syslinux,tftp-server
+    state: present
+  become: true
+
+- name: Install extra packages
+  yum: net-tools,nmap,traceroute,jwhois,tcpdump
+  become: true
+
+  

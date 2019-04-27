@@ -1,0 +1,21 @@
+#update packages
+
+- name: Install EPEL repo for ARM7
+  copy:
+    dest: /etc/yum.repos.d/epel.repo
+    src: |
+      [epel]
+      name=Epel rebuild for armhfp
+      baseurl=https://armv7.dev.centos.org/repodir/epel-pass-1/
+      enabled=1
+      gpgcheck=0
+  when: "'armv7l' in ansible_facts['architecture']"
+  become: true
+
+- name: Install EPEL repo for everything else
+  yum:
+    name: epel-release
+  when: "'armv7l' not in ansible_facts['architecture']"
+  become: true
+
+
