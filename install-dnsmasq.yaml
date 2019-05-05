@@ -1,12 +1,19 @@
 ---
 - name: install DNS Server
-  hosts: all
+  hosts: bobbykennedy.ourzoo.us
 
   tasks:
   - name: Install dnsmaq
     yum: 
-      name: docker 
+      name: dnsmasq
       state: latest
+    become: true
+
+  - name: enable and start the dnsmasq service 
+    systemd: 
+      name: dnsmasq 
+      state: started 
+      enabled: yes
     become: true
 
 
@@ -14,25 +21,24 @@
 
 
 
-yum install dnsmasq
-systemctl start dnsmasq.service
-systemctl enable dnsmasq.service
-
-# Modify /etc/dnsmasq.conf
-
-  domain-needed
-  bogus-priv
-  no-resolv
-  no-poll
-  server=/ourzoo.us/192.168.1.28
-  server=68.94.156.11
-  server=68.94.157.11
-  local=/ourzoo.us/
-  log-facility=/var/log/dnsmasq.log
-  log-queries
-  no-hosts
-  addn-hosts=/etc/hosts.dnsmasq
-  expand-hosts
-
-# change dhcp conf to use 192.168.1.28 for /etc/resolv.conf too
+#systemctl start dnsmasq.service
+#systemctl enable dnsmasq.service
+#
+## Modify /etc/dnsmasq.conf
+#
+#  domain-needed
+#  bogus-priv
+#  no-resolv
+#  no-poll
+#  server=/ourzoo.us/192.168.1.28
+#  server=68.94.156.11
+#  server=68.94.157.11
+#  local=/ourzoo.us/
+#  log-facility=/var/log/dnsmasq.log
+#  log-queries
+#  no-hosts
+#  addn-hosts=/etc/hosts.dnsmasq
+#  expand-hosts
+#
+## change dhcp conf to use 192.168.1.28 for /etc/resolv.conf too
 
