@@ -1,0 +1,117 @@
+ssh
+    1  ssh-keygen -t rsa
+    2  more .ssh/id_rsa # hostname adduser git ssh clone ansible
+    3  more .ssh/id_rsa.pub 
+    4  git clone git@github.com:epieye/ansible.git
+
+    7  # adduser; install git; ssh keygen; clone ansible; set  hostname
+    9  vi keys.yaml
+   10  grep hostname *
+
+   12  mkdir old
+   13  mv ssp.yaml old
+
+ansible and initial setup 
+   17  vi keys.yaml
+   18  cd ansible/
+   32  vi keys.yaml 
+
+   42  more inventory 
+   43  grep tanami *
+   44  more inventory 
+
+git
+   47  git status
+   48  git add inventory.old
+   49  git add keys.yaml
+   50  git add old/ssp.yaml 
+   51  git add inventory
+   52  git rm ssp.yaml
+   53  git commit -m "refresh"
+   54  git config --global user.name "Warren Matthews"
+   55  git config --global user.email warren@ourzoo.us
+   56  git commit --amend --reset-author
+   57  git commit -m "refresh"
+   58  git push
+
+   63  git pull
+   65  ls *pxe*
+
+   68  vi keys.yaml 
+   69  more keys.yaml 
+   70  ansible-playbook -i 192.168.1.168 keys.yaml --ask-pass
+   71  git add keys.yaml 
+   72  git commit -m "update"
+   73  git push
+   74  git config --global push.default matching
+   75  git push
+   76  git pull
+
+   80  cd ansible/
+   81  grep 82 inventory
+   82  ls *nfs*
+
+   88  mkdir roles
+
+   90  mkdir roles/nfs-server
+   91  ls roles
+   92  mkdir roles/nfs-server/tasks
+   93  vi  roles/nfs-server/tasks/main.yaml
+   94  vi  roles/nfs-server/tasks/nfs_server.yaml
+   95  pwd
+   96  ls
+   97  git status
+   98  ls roles
+   99  ls roles/nfs-server/tasks/
+  100  git add roles/nfs-server/tasks/main.yaml 
+  101  git add roles/nfs-server/tasks/nfs_server.yaml 
+  102  git commit -m "nfs server"
+  103  git push
+
+  105  git pull
+
+  108  more keys.yaml 
+  112  groups
+  113  exit
+  114  groups
+  115  sudo ls
+  116  more /etc/sudoers
+  117  sudo -s
+  118  exit
+  120  rpm -qa | grep httpd
+  123  ls .ssh/
+  124  ls .ssh/id_rsa.pub 
+  125  vi .ssh/authorized_keys
+  126  chmod 600 .ssh/authorized_keys 
+  127  vi .ssh/authorized_keys
+  129  cd .ssh
+
+ssh
+  133  ls .ssh/authorized_keys 
+  134  ls -l .ssh/authorized_keys 
+  135  more  .ssh/authorized_keys 
+  136  vi  .ssh/authorized_keys 
+  137  exit
+  138  sudo yum update
+  139  sudo vi /etc/sudoers
+  140  sudo yum update
+
+nfs
+  149  sudo mount /mnt/dev/sda1
+  150  sudo mount /mnt /dev/sda1
+  151  sudo mount /dev/sda1 /mnt
+
+epel
+  282  sudo vi /etc/yum.repos.d/epel.repo
+
+python3
+  284  sudo yum install python36
+
+  248  sudo yum install wget
+  249  wget https://bootstrap.pypa.io/get-pip.py
+  250  sudo /usr/local/bin/python get-pip.py
+ 
+
+dnsmasq or pihole
+dhcpd 
+pxe

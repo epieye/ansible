@@ -1,6 +1,7 @@
-kalahari.ourzoo.us ansible_host=192.168.1.82
-gobi.ourzoo.us     ansible_host=192.168.1.78
-mojave.ourzoo.us   ansible_host=192.168.1.73
-sahara.ourzoo.us   ansible_host=192.168.1.80
-tanami.ourzoo.us   ansible_host=192.168.1.34
-karakum.ourzoo.us  ansible_host=192.168.1.81
+bobbykennedy.ourzoo.us ansible_host=192.168.1.176
+kalahari.ourzoo.us     ansible_host=192.168.1.82
+gobi.ourzoo.us         ansible_host=192.168.1.78
+mojave.ourzoo.us       ansible_host=192.168.1.73
+sahara.ourzoo.us       ansible_host=192.168.1.80
+tanami.ourzoo.us       ansible_host=192.168.1.34
+karakum.ourzoo.us      ansible_host=192.168.1.81
