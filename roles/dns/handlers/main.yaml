@@ -1,0 +1,10 @@
+---
+- name: start dnsmasq
+  service: 
+    name: dnsmasq 
+    state: started
+    enable: true
+  become: true
+    
+
+
