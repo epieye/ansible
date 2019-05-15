@@ -2,4 +2,7 @@
 ---
 - hosts: all
   roles:
-     - dns
+     - pre-upgrade
+     #- common
+     #- dns
+     - post-upgrade
