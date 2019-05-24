@@ -1,0 +1,8 @@
+# https://www.digitalocean.com/community/tutorials/how-to-use-ansible-roles-to-abstract-your-infrastructure-environment
+---
+- hosts: all
+  roles:
+     - pre-upgrade
+     #- common
+     #- dns
+     - post-upgrade

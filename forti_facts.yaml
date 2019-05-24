@@ -2,7 +2,7 @@
 - name: FortiTest
   hosts: all
   connection: local
-  gather_facts: true
+  gather_facts: false
   vars: 
     creds: 
       host: "{{ ansible_host }}"
@@ -12,8 +12,7 @@
   #- name: get facts from device
   #  debug:
   #    msg: "{{ hostvars }}"
-
-
+  #
   #- name: get facts from device
   #  debug:
   #    msg: "{{ ansible_facts }}"

@@ -1,11 +1,13 @@
 ---
 - name: NAPALM PING
-  hosts: jsw-mgmt.ourzoo.us
+  hosts: 192.168.1.88
+  connection: local
+
   tasks: 
-    - name: NAPALM ping
-      napalm_ping:
-        hostname: "{{ ansible_host }}"
-        username: "hpbob"
-        password: "radius"
-        dev_os: "junos"
-        destination: 8.8.8.8
+  - napalm_ping:
+      hostname: "{{ inventory_hostname }}"
+      username: root
+      password: MJU&6tfc
+      dev_os: "junos"
+      destination: 8.8.8.8
+      count: 2

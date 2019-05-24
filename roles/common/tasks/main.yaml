@@ -1,2 +1,6 @@
 ---
+<<<<<<< HEAD
 - import_tasks: yum
+=======
+- import_tasks: yum.yaml
+>>>>>>> 6646a23462a1ec512805e4341734dfde21b3adc5

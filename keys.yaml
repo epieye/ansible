@@ -7,22 +7,40 @@
 
 
   - name: set static IP 192.168.1.28
-# install git
-# yum install docker
+
+  # install git
+
+  # NOT ON BOBBYK yum install docker
+
 # adduser
+
 # ssh keygen
+
 # copy keys
+
 # sshd no root login
+
 # maybe key only
+
 # vimrc
+
 # bash profile x ls history
 
 # Pause to add key to github 
 # clone ansible
 
-#dnsmasq
+  - name: Install dnsmasq
+    yum:
+      name: dnsmasq,dnsmasq-utils
+    become: true
+
 #dhcpd
 #tftpd
 #pxe
 
 #nfs
+
+
+
+
+

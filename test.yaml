@@ -7,7 +7,7 @@
   tasks:
   - name: set vlan
     set_fact:
-      vlan: 2135
+      vlan_id: "2135"
 
   - name: set ritm
     set_fact:
@@ -19,44 +19,57 @@
 
   - name: set VIF ID
     set_fact:
-      vif: >
-        {% if   inventory_hostname == 'us-ash-colo-inet01' %}dxvif-fg4n9lew
+      vif_id: >-
+        {% if   inventory_hostname == '192.168.1.88' %}dxvif-fg4n9lew
         {% elif inventory_hostname == 'us-ash-colo-inet02' %}dxvif-ffqrqzwu
         {% endif %}
-    failed_when: vif is not defined
+    failed_when: vif_id is not defined
 
   - name: set as1248 address
     set_fact:
-      address_as1248: >
-        {% if   inventory_hostname == 'us-ash-colo-inet01' %}169.254.249.114/30
+      address_as1248: >-
+        {% if   inventory_hostname == '192.168.1.88' %}169.254.249.114/30
         {% elif inventory_hostname == 'us-ash-colo-inet02' %}169.254.249.118/30
         {% endif %}
     failed_when: address_as1248 is not defined
 
   - name: set amazon address
     set_fact:
-      address_amazon: >
-        {% if   inventory_hostname == 'us-ash-colo-inet01' %}169.254.249.113/30
+      address_amazon: >-
+        {% if   inventory_hostname == '192.168.1.88' %}169.254.249.113/30
         {% elif inventory_hostname == 'us-ash-colo-inet02' %}169.254.249.117/30
         {% endif %}
     failed_when: address_amazon is not defined
 
   - name: set auth
     set_fact:
-      auth: >
-        {% if   inventory_hostname == 'us-ash-colo-inet01' %}0xTFGZmIbH5zVJI0i8OGqCG_
+      auth: >-
+        {% if   inventory_hostname == '192.168.1.88' %}0xTFGZmIbH5zVJI0i8OGqCG_
         {% elif inventory_hostname == 'us-ash-colo-inet02' %}0xLstBHYQtHKLkvdk2.8DIqD
         {% endif %}
     failed_when: auth is not defined
 
+  - name: set interface
+    set_fact:
+      interface: >-
+        {% if   inventory_hostname == '192.168.1.88' %}fe-0/0/0{% elif inventory_hostname == 'us-ash-colo-inet02' %}fe-0/0/0{% endif %}
+    failed_when: interface is not defined
+
   - name: Create changes from template.
     template:
       src: ./template.j2
-      dest: ./#{result.u_ritm}-{{ inventory_hostname }}.txt
+      dest: ./RITM0021381-{{ inventory_hostname }}.txt
 
-  - napalm_install_config:
-      dev_os: "junos"
-      config_file: "./{{ ritm }}-{{ inventory_hostname }}.txt"
-      commit_changes: True
-      replace_config: True
-      diff_file: "./{{ ritm }}-{{ inventory_hostname }}.diff"
+#  - napalm_install_config:
+#      hostname: 192.168.1.88
+#      dev_os: "junos"
+#      username: root
+#      password: MJU&6tfc
+#      config_file: "./RITM0021381-{{ ansible_host }}.txt"
+#      commit_changes: True
+#      #replace_config: True
+#      diff_file: "./RITM0021381-{{ inventory_hostname }}.diff"
+
+
+
+

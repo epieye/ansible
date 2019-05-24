@@ -10,4 +10,5 @@
         config_file: "configs/{{ inventory_hostname }}_minimal.txt"
         commit_changes: True
         replace_config: True
+        get_diffs: True
         diff_file: "configs/{{ inventory_hostname }}.diff"

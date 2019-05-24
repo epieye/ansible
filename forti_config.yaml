@@ -21,3 +21,4 @@
       password: MJU&6tfc
       backup: yes
       backup_path: /home/warren
+      backup_filename: forti_backup.txt
