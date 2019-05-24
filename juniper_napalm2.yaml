@@ -1,0 +1,37 @@
+---
+- name: Test naplam replace
+  hosts: 192.168.1.88
+  connection: local
+
+  tasks: 
+    - napalm_install_config:
+        hostname: "{{ ansible_host }}"
+        username: bob
+        password: Radius
+        dev_os: junos
+        config_file: "configs/test.txt"
+        commit_changes: True
+        replace_config: True
+        get_diffs: True
+        diff_file: "configs/test.diff"
+
+
+# Only partially works. the config_file has to be the entire configuration. 
+# I can't figure out how to merge a few extra commands.
+
+
+##fatal: [192.168.1.88]: FAILED! => {"changed": false, "msg": "Unsupported parameters for (napalm_install_config) module: load Supported parameters include: 
+#archive_file, 
+##commit_changes, 
+#config, 
+##config_file, 
+##dev_os, 
+##diff_file, 
+##get_diffs, 
+##hostname, 
+#optional_args, 
+##password, 
+#provider, 
+##replace_config, 
+#timeout, 
+##username"}

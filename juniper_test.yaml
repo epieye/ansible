@@ -1,0 +1,36 @@
+# upgrade/install python
+# - wget https://www.python.org/ftp/python/2.7.16/Python-2.7.16.tgz
+# - tar xzf Python-2.7.16.tgz
+# - cd Python-2.7.16/
+# - ./configure --enable-optimizations
+# - make
+# - sudo make install
+# /usr/local/bin/python get-pip.py
+# ansible-galaxy install Juniper.junos
+# sudo pip install junos-eznc
+---
+- name: "Configure Device" 
+  hosts: all
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+
+  vars:
+    ansible_python_interpreter: "/usr/local/bin/python"
+
+  tasks:
+    - name: "Configure location"
+      juniper_junos_config:
+        config_mode: "private"
+        load: "set"
+        lines:
+          - "set system location country-code US"
+          - "set system location latitude 33.948730"
+          - "set system location longitude -84.294338"
+          - "set system location altitude 989.75"
+      register: response
+
+    - name: "Print the config changes"
+      debug:
+        var: response.diff_lines

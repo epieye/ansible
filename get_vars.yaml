@@ -1,0 +1,8 @@
+---
+- name: retrieve ansible facts
+  hosts: all
+  gather_facts: yes
+
+  tasks:
+  - debug:
+      msg: "{{ ansible_facts['architecture'] }}"

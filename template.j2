@@ -1,0 +1,11 @@
+set interfaces {{ interface }}.{{ vlan_id }} description "EXT, DOT1Q, AWS, ID:{{ vif_id }}"
+set interfaces {{ interface }}.{{ vlan_id }} vlan-id {{ vlan_id }}
+set interfaces {{ interface }}.{{ vlan_id }} family inet address {{ address_as1248 }}
+set interfaces {{ interface }}.{{ vlan_id }} family inet filter output AWS
+set interfaces {{ interface }}.{{ vlan_id }} family inet mtu 1500
+set policy-options policy-statement AWS-IN-{{ ritm }} term {{ ritm }} from route-filter {{ subnet }} exact
+set policy-options policy-statement AWS-IN-{{ ritm }} term {{ ritm }} then accept
+set policy-options policy-statement AWS-IN-{{ ritm }} term default then reject
+set routing-instances aws interface set interfaces {{ interface }}.{{ vlan_id }} 
+set routing-instances aws protocols bgp group AWS neighbor {{ address_amazon }} authentication-key {{ auth  }} family inet unicast
+set routing-instances aws protocols bgp group AWS neighbor {{ address_amazon }} import AWS-IN-{{ ritm }}

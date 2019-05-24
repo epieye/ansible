@@ -1,0 +1,22 @@
+# https://www.juniper.net/documentation/en_US/junos-ansible/topics/reference/general/junos-ansible-modules-overview.html
+# galaxy
+---
+- name: Get Device Facts
+  hosts: 192.168.1.88
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+
+  vars:
+    ansible_python_interpreter: "/usr/local/bin/python"
+
+  tasks:
+    - name: Retrieve facts from device running Junos OS
+      juniper_junos_facts:
+        host: "{{ inventory_hostname }}"
+        savedir: "{{ playbook_dir }}"
+
+    - name: Print version
+      debug:
+        var: junos.version
