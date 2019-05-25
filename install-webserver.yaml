@@ -1,4 +1,6 @@
 ---
-- hosts: all
+- name: install web server
+  hosts: all
+
   roles:
      - webserver

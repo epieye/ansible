@@ -1,5 +1,22 @@
 # https://www.juniper.net/documentation/en_US/junos-ansible/topics/reference/general/junos-ansible-modules-overview.html
-# galaxy
+# Some of 
+# sudo yum install gcc
+# sudo yum install nc
+# sudo yum install python2-distutils-extra
+# sudo yum install libxml2
+# sudo yum install libxml2-devel
+# sudo yum install python-devel
+# sudo yum install libxml2-devel
+# sudo yum install libxml2-python
+# sudo yum install python-lxml
+# sudo yum install libxslt-devel
+# sudo pip install pip==9.0.3
+# sudo pip install setuptools --upgrade
+# sudo pip install PyYAML --upgrade
+# sudo pip install junos-eznc
+# sudo pip install jxmlease
+# and
+# ansible-galaxy install Juniper.junos
 ---
 - name: Get Device Facts
   hosts: 192.168.1.88
@@ -8,15 +25,37 @@
   connection: local
   gather_facts: no
 
-  vars:
-    ansible_python_interpreter: "/usr/local/bin/python"
-
   tasks:
-    - name: Retrieve facts from device running Junos OS
-      juniper_junos_facts:
-        host: "{{ inventory_hostname }}"
-        savedir: "{{ playbook_dir }}"
+  - name: Configure test. uncommitted changes will be discarded on exit.
+    juniper_junos_config:
+      load: set
+      config_mode: private
+      commit: false
+      template: templates/192.168.1.88.j2
+      diffs_file: diff.txt
+      vars:
+        country_code: "US" 
+        latitude: "33.948730"
+        longitude: "-84.294338"
 
-    - name: Print version
-      debug:
-        var: junos.version
+        
+#---
+#- name: Get Device Facts
+#  hosts: 192.168.1.88
+#  roles:
+#    - Juniper.junos
+#  connection: local
+#  gather_facts: no
+#
+#  vars:
+#    ansible_python_interpreter: "/usr/local/bin/python"
+#
+#  tasks:
+#    - name: Retrieve facts from device running Junos OS
+#      juniper_junos_facts:
+#        host: "{{ inventory_hostname }}"
+#        savedir: "{{ playbook_dir }}"
+#
+#    - name: Print version
+#      debug:
+#        var: junos.version
