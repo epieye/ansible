@@ -1,0 +1,19 @@
+---
+- name: Restart server
+  shell: '/usr/sbin/shutdown -r --no-wall'
+  async: 1
+  poll: 0
+  #ignore_errors: true
+  become: true
+  listen: reboot
+  tags: upgrade,update
+
+- name: Wait for server to restart
+  local_action:
+    module: wait_for
+      host={{ inventory_hostname }}
+      port=22
+      delay=120
+  become: false
+  listen: reboot
+  tags: upgrade,update

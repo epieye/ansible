@@ -1,0 +1,10 @@
+---
+- name: update all packages
+  yum:
+    name: '*'
+    state: latest
+  become: true
+  notify: package-cleanup 
+  tags: update,upgrade
+
+# sudo package-cleanup --oldkernels --count=1

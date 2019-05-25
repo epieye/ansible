@@ -1,0 +1,8 @@
+---
+- name: enable and start http service 
+  systemd: 
+    name: http
+    state: started 
+    enabled: yes
+  become: true
+

@@ -1,0 +1,6 @@
+---
+- name: verify RFC number
+  fail:
+    msg: "No RFC has been specified."
+  when: rfc is undefined
+  tags: upgrade

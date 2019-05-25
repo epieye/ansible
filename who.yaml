@@ -1,0 +1,15 @@
+---
+- name: Track logged-in users.
+  hosts: all
+
+  tasks:
+  - name: who
+    shell: who | cut -d " " -f 1
+    register: users
+
+  - debug:
+      msg: "{{ inventory_hostname }} {{ users }}"
+
+  - name: 
+    shell: "groups {{ item }}"
+    with_items: "{{ users['stdout_lines'] }}"

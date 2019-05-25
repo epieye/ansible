@@ -1,0 +1,50 @@
+---
+- name: verify users
+  shell: "who | cut -d ' ' -f 1 | sort | uniq"
+  register: users
+  tags: upgrade,update
+
+# alert logged-in users and prevent anyone else logging it - tell them to use the backup.
+# also verify rfc12345 has been included --extra-vars "rfc=rfc12345"
+
+# /etc/ssh/sshd_config; 'Banner none' -> 'Banner /etc/issue'
+# /etc/issue; 'Do not use. This server is about to be rebooted. Consider using another host, or come back in a few minutes.'
+# or
+# /etc/profile.d/
+
+#- debug:
+#    msg: "{{ users['stdout_lines'] }}"
+#  tags: upgrade,update
+
+#- name: alert users that the host will be rebooted.
+#  # I can't just notify, there's got to be a task. But I can just command an echo.
+#  notify: 
+#    - "teams_alert {{ item }}"
+#  with_items: "{{ users }}"
+#  tags: upgrade,update
+
+#- name: Send alert in Teams to logged-in users. I seem to remember this doesn't work.
+#  cisco_spark:
+#    recipient_type: toPersonEmail
+#    recipient_id: "{{ person_email }}"
+#    message_type: markdown
+#    personal_token: "{{ token }}"
+#    message: "Cisco Spark Ansible Module - Text Message to Individual by ID"
+#
+#  with_items: "{{ users }}"
+#
+#  tags: upgrade,update
+
+#- name: Send alert in Teams to logged-in users. I seem to remember this doesn't work. Yeah, it doesn't.
+#  cisco_spark:
+#    recipient_type: roomId
+#    recipient_id: Y2lzY29zcGFyazovL3VzL1JPT00vYTdmNjgyYTAtYzhlMC0xMWU4LWE3MDAtYTkyN2UzYjI3OGM5
+#    message_type: markdown
+#    personal_token: MTQ0OWFkNmEtN2ZjNS00MTYwLThjMmYtODc3ODZmZWFjN2ZkY2VlNjE3OWQtZWI2
+#    message: "Test Message"
+#  tags: upgrade,update
+
+# askgns MTQ0OWFkNmEtN2ZjNS00MTYwLThjMmYtODc3ODZmZWFjN2ZkY2VlNjE3OWQtZWI2
+# askgnsdev NDEwNzdiNjItYWMwNC00ZTVhLWI0NTYtNTNlZDM1NWVjOTEwODgzY2VjMTAtZDhmA
+
+

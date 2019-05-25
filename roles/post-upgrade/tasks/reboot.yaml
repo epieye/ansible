@@ -1,0 +1,10 @@
+---
+- name: Notify users again.
+  command: who
+  tags: update,upgrade
+
+- name: reboot server
+  command: echo "rebooting now"
+  notify:
+    - reboot 
+  tags: update,upgrade

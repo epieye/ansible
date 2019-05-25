@@ -1,0 +1,10 @@
+---
+- name: Send alert in Teams to logged-in users. I seem to remember this doesn't work.
+  cisco_spark:
+    recipient_type: toPersonEmail
+    recipient_id: "{{ person_email }}"
+    message_type: markdown
+    personal_token: "{{ token }}"
+    message: "Cisco Spark Ansible Module - Text Message to Individual by ID"
+  listen: "send teams alert"
+  tags: upgrade,update
