@@ -31,12 +31,19 @@
       load: set
       config_mode: private
       commit: false
-      template: templates/192.168.1.88.j2
-      diffs_file: diff.txt
+      template: templates/juniper_vpc_primary.j2
+      diffs_file: diff_primary.txt
       vars:
-        country_code: "UK" 
-        latitude: "33.948730"
-        longitude: "-84.294338"
+        ritm: RITM0021502
+        subnet: 10.121.0.64/26
+        primary_interface: ge-2/0/0
+        vlan_id: 2935
+        primary_vif_id: dxvif-fgnyol3v
+        address_as1248_primary: 
+        address_amazon_primary: 
+        primary_auth: 0xLnnar6jSCW3XdF8o0TLVM9
+       
+      
 
         
 #---

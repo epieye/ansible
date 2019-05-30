@@ -1,8 +1,26 @@
 ---
-- name: Initial set up for Bobby Kennedy. ansible-playbook -i 192.168.1.168 keys.yaml -u root --ask-pass
-  hosts: all
+- name: Initial user account. Normally this would be done by kickstart post-install, but raspberry-pi is not kickstarted.
+  user:
+    name: warren
+    comment: Warren Matthews
+    group: wheel
+    shell: /bin/bash
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+    ssh_key_file: .ssh/id_rsa
+  when: ansible_architecture == "armv7l"
 
-  tasks:
+- name: Set authorized key taken from file
+  authorized_key:
+    user: warren
+    state: present
+    key: "{{ lookup('file', '/home/warren/.ssh/id_rsa.pub') }}"
+
+
+#  hosts: all
+#  get_facts: true
+#
+#  tasks:
 #  - name: set hostname
 #
 #
@@ -12,7 +30,17 @@
 #
 #  # NOT ON BOBBYK yum install docker
 
-# adduser
+  #- name: adduser. Normally this would be done by kickstart post-install, but raspberry-pi is not kickstarted.
+  #  user:
+  #    name: warren
+  #    comment: Warren Matthews
+  #    group: wheel
+  #    shell: /bin/bash
+  #  when: architecture is armv7l
+
+
+#  debug:
+#    msg: "{{ ansible_facts }}" 
 
 # ssh keygen
 

@@ -1,0 +1,7 @@
+# Initial set up for Bobby Kennedy. ansible-playbook -i 192.168.1.168 keys.yaml -u root --ask-pass
+---
+- name: Install prerequsites
+  hosts: all
+
+  roles:
+  -  pre-install
